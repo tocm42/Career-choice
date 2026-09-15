@@ -460,6 +460,10 @@
 
   function renderChat(body) {
     var c = state.coach;
+    if (window.COMPASS_HOSTED) {
+      body.innerHTML = '<div class="card sky"><h2>Talk to the coach</h2><p>This hosted copy cannot reach outside services, so the conversational coach is switched off here. The weekly check-in and coaching session tabs do the same job without a connection. To use the conversational coach, open the app from the GitHub repository and add an API key there.</p></div>';
+      return;
+    }
     var html = '<div class="card sky"><p class="small" style="margin:0">This coach talks back. It runs on the Claude model with your own API key, which stays in this browser and is sent only to Anthropic with each message. Your report, plan and check-ins are included so it knows the background. Leave the key blank to keep using the built-in coach on the other tabs.</p>' +
       '<div class="row" style="margin-top:.75rem"><input type="password" id="apiKey" placeholder="Anthropic API key (sk-ant-...)" value="' + esc(c.apiKey || '') + '" style="max-width:420px"><button class="btn small" id="saveKey">Save key</button>' + (c.apiKey ? '<button class="btn small ghost" id="clearKey">Remove key</button>' : '') + '</div></div>';
     html += '<div class="card"><div class="chat" id="chat">' + (c.chat.length ? c.chat.map(function (m) { return '<div class="msg ' + (m.role === 'user' ? 'me' : 'coach') + '">' + esc(m.content) + '</div>'; }).join('') : '<div class="msg sys">Start with whatever is on your mind. A good first message: “What would you ask me first?”</div>') + '</div>' +
