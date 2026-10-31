@@ -6,6 +6,12 @@ A creature-mixing game for children. Open `index.html` in any browser; there is 
 
 The screen is a fixed 16:9 layout that scales to fit, so it mirrors cleanly over AirPlay or a cable. It works by touch or with a keyboard/remote: arrow keys move, Enter (OK) picks or mixes, M mixes, Q opens the quest board, B goes back.
 
+## 3D creatures
+
+Every creature is a real-time 3D model built from parts (body, head, ears, eyes, mouth, wings, legs, tail and extras) and rendered in the browser with Three.js, so every possible mix gets a proper 3D picture. Tiles use rendered snapshots; the preview and reveal screens show a live turntable. If WebGL is unavailable the game falls back to drawn creatures.
+
+Files: `index.html` (game), `creature3d.js` (3D builder and renderer), `vendor/` (Three.js, MIT licence).
+
 ## How to play
 
 1. Tap a creature to put it in the **Top half** pod (gives the head and wings).

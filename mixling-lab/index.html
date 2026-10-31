@@ -44,7 +44,7 @@ html,body{margin:0;height:100%;background:#120a3a;overflow:hidden;font-family:'E
 .pod .qm{font-size:64px;color:#fff8;font-weight:800;margin:auto}
 .pod .nm{font-size:13px;font-weight:800;color:#fff;text-shadow:0 1px 2px #0009;max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pod.active{border-color:#fff;box-shadow:0 0 0 4px #ffd54a,0 0 24px #ffd54a}
-.pod.fly svg{transition:transform .8s cubic-bezier(.6,-0.3,.7,1),opacity .8s;transform:translate(var(--dx),var(--dy)) scale(.2) rotate(540deg);opacity:0}
+.pod.fly svg,.pod.fly img{transition:transform .8s cubic-bezier(.6,-0.3,.7,1),opacity .8s;transform:translate(var(--dx),var(--dy)) scale(.2) rotate(540deg);opacity:0}
 .mixbtn{width:100%;height:76px;border:none;border-radius:999px;color:#fff;font:800 36px/1 'Exo 2',sans-serif;letter-spacing:3px;cursor:pointer;
   background:linear-gradient(180deg,#ff7ac0,#e11d74);box-shadow:0 7px 0 #8a0f45,0 12px 24px #0005;transition:transform .1s}
 .mixbtn:active{transform:translateY(5px);box-shadow:0 2px 0 #8a0f45}
@@ -168,6 +168,16 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:65}
   background:conic-gradient(from 0deg,#3be8ff,#9d5cff,#ff4fa3,#ffd54a,#9dff5c,#3be8ff);animation:spin .3s linear infinite;box-shadow:0 0 80px #fff,0 0 160px #ff4fa3;border:6px solid #fff}
 .mixing .vortex{display:block}
 
+/* 3D pictures */
+img.th{width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 6px 6px #0004)}
+.tile img.th{width:108px;height:108px}
+.pod img.th{width:112px;height:112px;margin-top:22px}
+.tile.sil img.th{filter:brightness(0) opacity(.5)}
+.live{width:100%;height:100%;position:relative}
+.preview .big .live{height:280px}
+.preview .big .duo img.th{height:230px;width:230px}
+.stagebox .live{position:relative;height:400px;width:400px}
+.sil3d{filter:brightness(0) opacity(.55)}
 /* creature animation */
 .anim .bobber{animation:crbob 2.4s ease-in-out infinite}
 .anim .shadow{animation:shad 2.4s ease-in-out infinite;transform-origin:100px 192px}
@@ -239,8 +249,8 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:65}
   <div class="flash" id="flash"></div>
 </div>
 </div>
-<script>
-"use strict";
+<script type="module">
+import C3D from './creature3d.js';
 /* =========================================================
    Colour helpers
    ========================================================= */
@@ -665,6 +675,11 @@ function tickFx(){fctx.clearRect(0,0,innerWidth,innerHeight);
   fctx.globalAlpha=1;
   if(parts.length)requestAnimationFrame(tickFx);else fxRun=false}
 
+/* picture helpers: 3D when available, drawn SVG otherwise */
+const pic=(c,opts={})=>C3D.ok?`<img class="th" alt="${c.name}" src="${C3D.thumb(c,opts.size||384)}">`:renderCreature(c,opts);
+function live(c,el,mode){if(C3D.ok){const d=document.createElement('div');d.className='live';el.innerHTML='';el.appendChild(d);C3D.mount(c,d,{mode})}else el.innerHTML=renderCreature(c)}
+window.addEventListener('beforeunload',()=>C3D.unmount&&C3D.unmount());
+
 /* =========================================================
    Quests
    ========================================================= */
@@ -741,7 +756,7 @@ function renderHud(){
 }
 function renderPods(){
   [0,1].forEach(i=>{const el=i?$('podR'):$('podL'),c=slots[i];
-    el.innerHTML=`<div class="lbl">${i?'👟 BOTTOM':'🎩 TOP'}</div>${c?renderCreature(c)+`<div class="nm">${c.name}</div>`:'<div class="qm">?</div>'}`;
+    el.innerHTML=`<div class="lbl">${i?'👟 BOTTOM':'🎩 TOP'}</div>${c?pic(c)+`<div class="nm">${c.name}</div>`:'<div class="qm">?</div>'}`;
     el.classList.toggle('active',!c&&(i===0||!!slots[0]));
   });
   const ready=!!(slots[0]&&slots[1]);
@@ -749,17 +764,19 @@ function renderPods(){
 }
 function renderPreview(){
   const p=$('preview'),ready=slots[0]&&slots[1];
+  C3D.unmount&&C3D.unmount();
   if(ready){
     p.innerHTML=`<div class="vortex"></div><div class="ptitle">${slots[0].name} + ${slots[1].name}</div>
-      <div class="big"><div class="duo">${renderCreature(slots[0])}<span>+</span>${renderCreature(slots[1])}</div></div>
+      <div class="big"><div class="duo">${pic(slots[0])}<span>+</span>${pic(slots[1])}</div></div>
       <div class="hint">Press "OK" to mix!</div><div class="sub">or pick a different creature to swap it in</div>`;return;
   }
   const c=focused();
   if(!c){p.innerHTML=`<div class="vortex"></div><div class="ptitle">Nothing here yet</div><div class="big"><div style="font-size:120px">🧪</div></div><div class="hint">Mix some creatures!</div><div class="sub"></div>`;return}
-  if(c.sil){p.innerHTML=`<div class="vortex"></div><div class="ptitle">Secret legend</div><div class="big"><div style="filter:brightness(0) opacity(.55)">${renderCreature(c,{anim:false})}</div></div><div class="hint">Press "OK" for the riddle</div><div class="sub">👑 ${c.riddle}</div>`;return}
+  if(c.sil){p.innerHTML=`<div class="vortex"></div><div class="ptitle">Secret legend</div><div class="big"><div class="sil3d" style="height:270px;width:270px">${pic(c)}</div></div><div class="hint">Press "OK" for the riddle</div><div class="sub">👑 ${c.riddle}</div>`;return}
   const extra=c.kind==='base'?`${HAB[c.hab].emoji} ${HAB[c.hab].name} · can ${c.power}`:c.kind==='legend'?`👑 Legendary · can ${c.power}`:`${c.sparkly?'💎 Sparkly · ':''}${c.top} + ${c.bottom} · can ${c.powers[0]}`;
-  p.innerHTML=`<div class="vortex"></div><div class="ptitle">${c.name}</div><div class="big">${renderCreature(c)}</div>
+  p.innerHTML=`<div class="vortex"></div><div class="ptitle">${c.name}</div><div class="big" id="bigView"></div>
     <div class="hint">${(slots[0]&&slots[0].id===c.id)||(slots[1]&&slots[1].id===c.id)?'Press "OK" to put back':slots[0]?'Press "OK" for bottom half':'Press "OK" for top half'}</div><div class="sub">${extra}</div>`;
+  live(c,$('bigView'),'idle');
 }
 function renderGrid(){
   curList=CATS[cat].list();
@@ -773,7 +790,7 @@ function renderGrid(){
     const inA=slots[0]&&slots[0].id===c.id, inB=slots[1]&&slots[1].id===c.id;
     const tag=c.kind==='legend'?'👑':c.sparkly?'💎':'';
     h+=`<div class="tile ${i===focus?'focus':''} ${c.sil?'sil':''}" data-i="${i}" style="animation-delay:${i*.025}s">
-      ${renderCreature(c,{anim:i===focus&&!c.sil})}${tag?`<span class="tg">${tag}</span>`:''}
+      ${pic(c,{anim:i===focus&&!c.sil})}${tag?`<span class="tg">${tag}</span>`:''}
       ${inA?'<span class="pick">TOP</span>':inB?'<span class="pick">BOT</span>':''}${c.sil?'':'<span class="ii" data-info="'+c.id+'">i</span>'}</div>`;
   }
   $('grid').innerHTML=h;
@@ -888,8 +905,8 @@ async function doMix(){
   busy=true;Sound.init();
   const [a,b]=slots,r=mix(a,b);
   const pv=$('preview').getBoundingClientRect(),cx=pv.left+pv.width/2,cy=pv.top+pv.height/2,sc=scale();
-  [$('podL'),$('podR')].forEach(p=>{const pr=p.querySelector('svg').getBoundingClientRect();p.style.setProperty('--dx',((cx-(pr.left+pr.width/2))/sc)+'px');p.style.setProperty('--dy',((cy-(pr.top+pr.height/2))/sc)+'px');p.classList.add('fly')});
-  $('preview').classList.add('mixing');$('preview').querySelector('.big').style.opacity=.15;Sound.whoosh();
+  [$('podL'),$('podR')].forEach(p=>{const pr=(p.querySelector('svg,img')||p).getBoundingClientRect();p.style.setProperty('--dx',((cx-(pr.left+pr.width/2))/sc)+'px');p.style.setProperty('--dy',((cy-(pr.top+pr.height/2))/sc)+'px');p.classList.add('fly')});
+  $('preview').classList.add('mixing');{const bg=$('preview').querySelector('.big');if(bg)bg.style.opacity=.15}Sound.whoosh();
   await wait(700);$('screen').classList.add('shake');
   for(let i=0;i<5;i++)setTimeout(()=>burst(cx,cy,12,5),i*120);
   await wait(700);$('screen').classList.remove('shake');
@@ -931,7 +948,7 @@ async function flushBanners(){
    Modals
    ========================================================= */
 function openModal(html,cls=''){$('modal').className='modal '+cls;$('modal').innerHTML=`<button class="x" data-close>✕</button>`+html;$('ov').hidden=false;$('modal').scrollTop=0}
-function closeModal(){Sound.pop();$('ov').hidden=true;$('modal').innerHTML='';if(pendingBanners.length)flushBanners();else renderAll()}
+function closeModal(){Sound.pop();$('ov').hidden=true;$('modal').innerHTML='';C3D.unmount&&C3D.unmount();if(pendingBanners.length)flushBanners();else renderAll()}
 $('ov').addEventListener('click',e=>{if(e.target===$('ov')||e.target.closest('[data-close]'))closeModal()});
 
 const traitWords={
@@ -957,20 +974,22 @@ const bigName=n=>`<div class="rname">${[...n].map((ch,i)=>ch===' '?' ':`<span st
 
 function showReveal(r,isNew){
   const legend=r.kind==='legend';
-  openModal(`${isNew?'<div class="newtag">NEW!</div>':''}<div class="reveal"><div class="stagebox"><div class="rays"></div>${renderCreature(r)}</div>
+  openModal(`${isNew?'<div class="newtag">NEW!</div>':''}<div class="reveal"><div class="stagebox"><div class="rays"></div><div id="stageView" class="live"></div></div>
     <div>${bigName(r.name)}${rarityHTML(r)}${isNew?'':'<div style="opacity:.8;margin-bottom:6px">You have found this one before. Try a new mix!</div>'}
     ${traitsHTML(r)}${factsHTML(r)}
     <div class="row"><button class="btn teal" data-act="again">🧪 MIX IT AGAIN</button><button class="btn pink focus" data-close>OK</button></div></div></div>`,legend?'legend':'');
+  live(r,$('stageView'),'party');
   $('modal').querySelector('[data-act="again"]').onclick=()=>{slots=[getCreature(r.id)||r,null];closeModal();toast('Now pick a BOTTOM half to mix with '+r.name+'!')};
 }
 function showDetail(c){
-  openModal(`<div class="reveal"><div class="stagebox"><div class="rays"></div>${renderCreature(c)}</div><div>${bigName(c.name)}${rarityHTML(c)}${traitsHTML(c)}${factsHTML(c)}
+  openModal(`<div class="reveal"><div class="stagebox"><div class="rays"></div><div id="stageView" class="live"></div></div><div>${bigName(c.name)}${rarityHTML(c)}${traitsHTML(c)}${factsHTML(c)}
     <div class="row"><button class="btn teal" data-slot="0">🎩 USE AS TOP</button><button class="btn pink" data-slot="1">👟 USE AS BOTTOM</button><button class="btn focus" data-close>OK</button></div></div></div>`,c.kind==='legend'?'legend':'');
+  live(c,$('stageView'),'idle');
   $('modal').querySelectorAll('[data-slot]').forEach(b=>b.onclick=()=>{const i=+b.dataset.slot;if(slots[1-i]&&slots[1-i].id===c.id)slots[1-i]=null;slots[i]=c;closeModal()});
 }
 function showRiddle(L){
   const q=QBY['q_'+L.id];
-  openModal(`<div class="reveal"><div class="stagebox"><div class="rays"></div><div style="filter:brightness(0) opacity(.6)">${renderCreature(L)}</div></div><div>
+  openModal(`<div class="reveal"><div class="stagebox"><div class="rays"></div><div class="sil3d" style="width:380px;height:380px">${pic(L)}</div></div><div>
     <h2>A secret legend!</h2><div class="facts">🔮 <i>${L.riddle}</i></div>
     ${S.clues[q.id]?`<div class="facts">💡 ${L.clue}</div>`:`<button class="btn gold focus" data-clue="${q.id}">💡 GET A CLUE (3 ★)</button> `}<button class="btn ${S.clues[q.id]?'focus':''}" data-close>OK</button></div></div>`,'legend');
   bindClues(()=>showRiddle(L));
@@ -1012,6 +1031,7 @@ let toastT;
 function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3000)}
 
 /* go! */
+Object.assign(window,{BASE,LEGENDS,BY,mix,renderCreature,C3D});
 buildSky();renderAll();
 if(!Object.keys(S.found).length)setTimeout(()=>toast('Pick a TOP half and a BOTTOM half, then press OK to MIX! 🧪'),700);
 </script>
