@@ -2,6 +2,10 @@
 
 A creature-mixing game for children. Open `index.html` in any browser; there is nothing to install.
 
+## Playing on a TV
+
+The screen is a fixed 16:9 layout that scales to fit, so it mirrors cleanly over AirPlay or a cable. It works by touch or with a keyboard/remote: arrow keys move, Enter (OK) picks or mixes, M mixes, Q opens the quest board, B goes back.
+
 ## How to play
 
 1. Tap a creature to put it in the **Top half** pod (gives the head and wings).
