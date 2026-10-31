@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mixling Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ink:#1d1236;
+  --gold:#ffd54a;
+  --pink:#ff4fa3;
+  --cyan:#3be8ff;
+  --lime:#9dff5c;
+  --panel:rgba(255,255,255,.09);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{
+  font-family:'Fredoka','Baloo 2','Comic Sans MS',system-ui,sans-serif;
+  color:#fff;
+  background:
+    radial-gradient(circle at 15% 8%, #6d32ff66 0, transparent 38%),
+    radial-gradient(circle at 85% 25%, #ff3d9a55 0, transparent 40%),
+    radial-gradient(circle at 50% 100%, #00d0ff33 0, transparent 50%),
+    linear-gradient(#1a0b3d,#2a1166 55%,#120530);
+  background-attachment:fixed;
+  overflow-x:hidden;
+  user-select:none;
+}
+/* twinkling star field */
+.sky{position:fixed;inset:0;pointer-events:none;z-index:0}
+.sky i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;animation:twinkle 3s ease-in-out infinite}
+.sky b{position:absolute;border-radius:50%;filter:blur(2px);opacity:.35;animation:floaty 14s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.6)}50%{opacity:1;transform:scale(1.3)}}
+@keyframes floaty{0%,100%{transform:translateY(0) translateX(0)}50%{transform:translateY(-40px) translateX(20px)}}
+
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:12px 14px 30px}
+
+/* ---------- header ---------- */
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-bottom:8px}
+.logo{font-size:clamp(28px,6vw,46px);font-weight:700;letter-spacing:1px;display:flex;filter:drop-shadow(0 4px 0 #0006)}
+.logo span{display:inline-block;animation:hop 2.4s ease-in-out infinite;-webkit-text-stroke:2px #1d1236;paint-order:stroke fill}
+.logo span.sp{width:.35em}
+@keyframes hop{0%,100%{transform:translateY(0) rotate(0)}20%{transform:translateY(-8px) rotate(-6deg)}40%{transform:translateY(0) rotate(0)}}
+.hud{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--panel);border:2px solid #ffffff2a;border-radius:999px;padding:6px 14px;font-weight:600;font-size:17px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(6px)}
+.chip .star{color:var(--gold);font-size:20px;text-shadow:0 0 10px #ffd54a}
+.btn{font-family:inherit;font-weight:700;border:none;cursor:pointer;border-radius:999px;color:#fff;font-size:17px;padding:8px 16px;
+  background:linear-gradient(180deg,#8b5cf6,#6d28d9);box-shadow:0 5px 0 #3b1690,0 8px 18px #0005;transition:transform .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #3b1690}
+.btn.pink{background:linear-gradient(180deg,#ff6fb5,#e11d74);box-shadow:0 5px 0 #8a0f45,0 8px 18px #0005}
+.btn.teal{background:linear-gradient(180deg,#2ee6d6,#0e9f9a);box-shadow:0 5px 0 #075e5a,0 8px 18px #0005}
+.btn.gold{background:linear-gradient(180deg,#ffe066,#f59e0b);color:#5a3200;box-shadow:0 5px 0 #a35f00,0 8px 18px #0005}
+.btn.ghost{background:#ffffff1c;box-shadow:none;border:2px solid #ffffff33}
+.btn .badge{background:var(--pink);border-radius:999px;font-size:12px;padding:1px 7px;margin-left:4px;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.2)}}
+
+/* ---------- lab ---------- */
+.lab{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin:6px 0 14px}
+.pod{position:relative;border-radius:34px;min-height:260px;padding:10px;text-align:center;cursor:pointer;overflow:hidden;
+  border:4px solid #ffffff40;transition:transform .2s, box-shadow .3s}
+.pod.left{background:radial-gradient(circle at 50% 30%,#3be8ff55,#0b4a7a 70%);box-shadow:0 0 30px #3be8ff55, inset 0 0 40px #3be8ff44}
+.pod.right{background:radial-gradient(circle at 50% 30%,#ff4fa355,#6b0b4a 70%);box-shadow:0 0 30px #ff4fa355, inset 0 0 40px #ff4fa344}
+.pod.active{border-color:#fff;animation:podglow 1.2s ease-in-out infinite}
+@keyframes podglow{50%{box-shadow:0 0 50px #fff8, inset 0 0 50px #fff4}}
+.pod:hover{transform:translateY(-3px)}
+.pod .lbl{font-weight:700;font-size:15px;background:#0006;border-radius:999px;display:inline-block;padding:3px 12px}
+.pod .lbl small{display:block;font-weight:500;font-size:11px;opacity:.85}
+.pod .cr{height:170px;display:flex;align-items:center;justify-content:center}
+.pod .cr svg{width:170px;height:170px}
+.pod .nm{font-weight:700;font-size:20px;text-shadow:0 2px 0 #0008;min-height:26px}
+.pod .empty{font-size:80px;opacity:.5;animation:bob 2s ease-in-out infinite}
+.pod .hintx{font-size:14px;opacity:.8}
+.pod .bub{position:absolute;bottom:-20px;width:12px;height:12px;border-radius:50%;background:#ffffff55;animation:rise 4s linear infinite;pointer-events:none}
+@keyframes rise{to{transform:translateY(-320px);opacity:0}}
+.pod.fly .cr{transition:transform .9s cubic-bezier(.6,-0.3,.7,1), opacity .9s;transform:translateX(var(--dx)) scale(.2) rotate(540deg);opacity:0}
+
+.machine{display:flex;flex-direction:column;align-items:center;gap:14px}
+.vortex{width:130px;height:130px;border-radius:50%;position:relative;
+  background:conic-gradient(from 0deg,#3be8ff,#9d5cff,#ff4fa3,#ffd54a,#9dff5c,#3be8ff);
+  animation:spin 4s linear infinite;box-shadow:0 0 40px #9d5cffaa,0 0 80px #ff4fa355;border:5px solid #fff}
+.vortex::after{content:'';position:absolute;inset:14px;border-radius:50%;background:radial-gradient(circle,#fff 0,#e9d5ff 25%,#7c3aed 60%,#1d1236 100%)}
+.vortex::before{content:'+';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;font-size:56px;font-weight:700;color:#1d1236;animation:spin 4s linear infinite reverse}
+.mixing .vortex{animation:spin .25s linear infinite;box-shadow:0 0 80px #fff,0 0 160px #ff4fa3}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mixbtn{font-size:30px;padding:14px 34px;letter-spacing:2px}
+.mixbtn.ready{animation:wobble 1.2s ease-in-out infinite}
+.mixbtn:disabled{filter:grayscale(.8) brightness(.7);cursor:not-allowed;animation:none}
+@keyframes wobble{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-4deg) scale(1.06)}75%{transform:rotate(4deg) scale(1.06)}}
+.small-actions{display:flex;gap:8px}
+.small-actions .btn{font-size:14px;padding:6px 12px}
+.shake{animation:shake .12s linear infinite}
+@keyframes shake{0%{transform:translate(0,0)}25%{transform:translate(-5px,3px)}50%{transform:translate(4px,-4px)}75%{transform:translate(-3px,-2px)}100%{transform:translate(0,0)}}
+.flash{position:fixed;inset:0;background:#fff;z-index:60;pointer-events:none;opacity:0}
+.flash.go{animation:flash .7s ease-out}
+@keyframes flash{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+
+/* ---------- tray ---------- */
+.tray{background:#ffffff12;border:2px solid #ffffff22;border-radius:30px;padding:12px;backdrop-filter:blur(8px)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+.tab{flex:0 0 auto;font-family:inherit;font-weight:700;font-size:16px;color:#fff;border:3px solid transparent;border-radius:18px;padding:8px 14px;cursor:pointer;opacity:.75;transition:.15s;text-shadow:0 2px 0 #0006}
+.tab.on{opacity:1;border-color:#fff;transform:translateY(-2px) scale(1.04);box-shadow:0 6px 16px #0006}
+.tab.locked{filter:grayscale(.7)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;min-height:170px}
+.card{position:relative;border-radius:22px;padding:6px 6px 8px;text-align:center;cursor:pointer;border:3px solid #ffffff55;
+  box-shadow:0 6px 0 #0004;transition:transform .15s;animation:pop .35s backwards}
+.card:hover{transform:translateY(-4px) rotate(-2deg)}
+.card:active{transform:scale(.94)}
+.card svg{width:100%;height:96px}
+.card .n{font-weight:700;font-size:15px;line-height:1.1;text-shadow:0 2px 0 #0007;min-height:34px;display:flex;align-items:center;justify-content:center}
+.card .info{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:#0007;font-size:15px;line-height:26px;font-weight:700}
+.card .tag{position:absolute;top:4px;left:6px;font-size:16px}
+.card.sil svg{filter:brightness(0) opacity(.55)}
+.card.sil{cursor:help}
+@keyframes pop{from{transform:scale(.5);opacity:0}}
+.lockbox{grid-column:1/-1;text-align:center;padding:30px 10px;font-size:20px}
+.lockbox .big{font-size:60px;animation:bob 2s infinite ease-in-out}
+.empty-note{grid-column:1/-1;text-align:center;padding:24px;font-size:18px;opacity:.85}
+@keyframes bob{50%{transform:translateY(-8px)}}
+
+/* ---------- overlays ---------- */
+.overlay{position:fixed;inset:0;z-index:50;background:#0b0420cc;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:14px}
+.overlay[hidden]{display:none}
+.modal{position:relative;width:min(560px,100%);max-height:92vh;overflow:auto;border-radius:34px;padding:20px;text-align:center;
+  background:linear-gradient(180deg,#3a1a8a,#1f0c52);border:4px solid #ffffff55;box-shadow:0 20px 60px #000a;animation:zoomin .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes zoomin{from{transform:scale(.3) rotate(-8deg);opacity:0}}
+.modal h2{margin:4px 0 8px;font-size:30px}
+.x{position:absolute;z-index:5;top:10px;right:12px;width:42px;height:42px;border-radius:50%;border:none;background:#ffffff22;color:#fff;font-size:22px;font-weight:700;cursor:pointer;font-family:inherit}
+.stage{position:relative;height:260px;display:flex;align-items:center;justify-content:center;margin:0 -20px}
+.rays{position:absolute;width:520px;height:520px;left:50%;top:50%;margin:-260px 0 0 -260px;border-radius:50%;
+  background:repeating-conic-gradient(#ffffff22 0 10deg,transparent 10deg 20deg);animation:spin 12s linear infinite;
+  -webkit-mask:radial-gradient(circle,#000 20%,transparent 65%);mask:radial-gradient(circle,#000 20%,transparent 65%)}
+.legend .rays{background:repeating-conic-gradient(#ffd54a55 0 8deg,transparent 8deg 16deg)}
+.stage svg{position:relative;width:250px;height:250px;animation:arrive .8s cubic-bezier(.2,1.8,.4,1)}
+@keyframes arrive{from{transform:scale(0) rotate(-30deg)}}
+.rname{font-size:clamp(30px,8vw,44px);font-weight:700;line-height:1;margin:2px 0 6px}
+.rname span{display:inline-block;animation:letter .6s cubic-bezier(.2,1.8,.4,1) backwards;-webkit-text-stroke:2px #1d1236;paint-order:stroke fill}
+@keyframes letter{from{transform:translateY(-40px) scale(.2);opacity:0}}
+.rarity{display:inline-block;font-weight:700;border-radius:999px;padding:4px 14px;margin:4px 0 10px;font-size:16px}
+.r-base{background:#64748b}
+.r-mix{background:linear-gradient(90deg,#06b6d4,#8b5cf6)}
+.r-sparkly{background:linear-gradient(90deg,#ff4fa3,#ffd54a,#3be8ff,#9dff5c);color:#1d1236;background-size:300%;animation:slide 2s linear infinite}
+.r-legend{background:linear-gradient(90deg,#ffd54a,#ff9f1c,#ffd54a);color:#5a3200;background-size:300%;animation:slide 2s linear infinite;font-size:20px}
+@keyframes slide{to{background-position:300% 0}}
+.newtag{position:absolute;top:18px;left:18px;background:var(--pink);font-weight:700;font-size:22px;padding:6px 14px;border-radius:14px;transform:rotate(-12deg);animation:pulse 1s infinite;box-shadow:0 4px 0 #8a0f45;z-index:3}
+.facts{background:#ffffff14;border-radius:20px;padding:10px 14px;text-align:left;font-size:17px;line-height:1.45;margin:6px 0 12px}
+.facts b{color:var(--gold)}
+.traits{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0 10px}
+.traits span{background:#ffffff1f;border-radius:999px;padding:3px 10px;font-size:14px}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* quests */
+.qlist{display:flex;flex-direction:column;gap:10px;text-align:left}
+.q{display:flex;gap:12px;align-items:flex-start;background:#ffffff14;border-radius:20px;padding:10px 12px;border:2px solid #ffffff1f}
+.q.done{background:linear-gradient(90deg,#16a34a55,#ffffff10);border-color:#4ade80aa}
+.q .ic{font-size:30px;line-height:1;flex:0 0 auto;width:40px;text-align:center}
+.q h3{margin:0;font-size:18px}
+.q p{margin:2px 0 0;font-size:15px;opacity:.9;line-height:1.35}
+.q .rw{font-size:14px;color:var(--gold);font-weight:600;margin-top:3px}
+.q .clue{margin-top:6px;font-size:14px;background:#ffd54a22;border-radius:12px;padding:5px 9px;color:#fff3b0}
+.q .btn{font-size:13px;padding:5px 11px;margin-top:6px}
+.qsec{font-weight:700;font-size:15px;opacity:.75;margin:8px 0 0;text-transform:uppercase;letter-spacing:1px}
+
+/* banner */
+.banner{position:fixed;left:50%;top:14px;z-index:70;transform:translate(-50%,-160%);transition:transform .5s cubic-bezier(.2,1.5,.4,1);
+  background:linear-gradient(90deg,#ffe066,#f59e0b);color:#3d2200;border-radius:24px;padding:12px 22px;font-weight:700;font-size:19px;
+  box-shadow:0 10px 30px #0008;border:4px solid #fff;text-align:center;max-width:92vw}
+.banner.show{transform:translate(-50%,0)}
+.banner small{display:block;font-size:15px;font-weight:600}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:70;background:#1d1236ee;border:3px solid #fff;border-radius:999px;padding:10px 20px;font-weight:600;font-size:17px}
+.toast[hidden]{display:none}
+canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:65}
+
+/* creature animation (svg) */
+.anim .bobber{animation:crbob 2.4s ease-in-out infinite}
+.anim .shadow{animation:shad 2.4s ease-in-out infinite;transform-origin:100px 192px}
+.anim .floaty .bobber{animation:crfloat 2s ease-in-out infinite}
+@keyframes crbob{50%{transform:translateY(-5px)}}
+@keyframes crfloat{50%{transform:translateY(-12px)}}
+@keyframes shad{50%{transform:scale(.85);opacity:.6}}
+.anim .blink{animation:blink 4s infinite;transform-box:fill-box;transform-origin:center}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.anim .flapR{animation:flapR .5s ease-in-out infinite alternate}
+.anim .flapL{animation:flapL .5s ease-in-out infinite alternate}
+@keyframes flapR{to{transform:rotate(-16deg)}}
+@keyframes flapL{to{transform:rotate(16deg)}}
+.anim .buzz{animation:buzz .08s linear infinite alternate}
+@keyframes buzz{to{transform:rotate(6deg)}}
+.anim .wag{animation:wag 1s ease-in-out infinite alternate}
+@keyframes wag{to{transform:rotate(14deg)}}
+.anim .wig{animation:wig 1.1s ease-in-out infinite alternate}
+@keyframes wig{to{transform:rotate(8deg)}}
+.anim .boing{animation:boing 1.3s ease-in-out infinite alternate}
+@keyframes boing{to{transform:rotate(-10deg)}}
+.anim .spinslow{animation:spin 14s linear infinite;transform-origin:100px 115px}
+.anim .twk{animation:twinkle 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.anim .flick{animation:flick .4s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center bottom}
+@keyframes flick{to{transform:scale(1.15,.85)}}
+.anim .rainbowfx{animation:hue 3s linear infinite}
+@keyframes hue{to{filter:hue-rotate(360deg)}}
+
+@media (max-width:640px){
+  .lab{grid-template-columns:1fr 1fr;grid-template-areas:"l r" "m m"}
+  .pod.left{grid-area:l}.pod.right{grid-area:r}.machine{grid-area:m;flex-direction:row;justify-content:center}
+  .pod{min-height:210px;border-radius:26px}
+  .pod .cr{height:130px}.pod .cr svg{width:130px;height:130px}
+  .vortex{width:90px;height:90px}.vortex::before{font-size:40px}
+  .mixbtn{font-size:24px;padding:12px 22px}
+  .small-actions{flex-direction:column}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(98px,1fr))}
+  .card svg{height:80px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:0s!important;animation-iteration-count:1!important}
+}
+</style>
+</head>
+<body>
+<div class="sky" id="sky"></div>
+<canvas id="fx"></canvas>
+<div class="flash" id="flash"></div>
+
+<div class="wrap" id="wrap">
+  <header>
+    <div class="logo" id="logo"></div>
+    <div class="hud">
+      <div class="chip" title="Stars"><span class="star">★</span><span id="starCount">0</span></div>
+      <div class="chip" title="Mixlings found">🧬 <span id="foundCount">0</span></div>
+      <div class="chip" title="Legends found">👑 <span id="legendCount">0</span>/9</div>
+      <button class="btn gold" id="questBtn">📜 Quests</button>
+      <button class="btn ghost" id="soundBtn" title="Sound on or off">🔊</button>
+    </div>
+  </header>
+
+  <section class="lab" id="lab">
+    <div class="pod left active" id="podL" data-slot="0"></div>
+    <div class="machine">
+      <div class="vortex" id="vortex"></div>
+      <button class="btn pink mixbtn" id="mixBtn" disabled>MIX!</button>
+      <div class="small-actions">
+        <button class="btn teal" id="swapBtn" title="Swap the two creatures">⇄ Swap</button>
+        <button class="btn ghost" id="randBtn" title="Pick two at random">🎲 Surprise</button>
+      </div>
+    </div>
+    <div class="pod right" id="podR" data-slot="1"></div>
+  </section>
+
+  <section class="tray">
+    <div class="tabs" id="tabs"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+</div>
+
+<div class="overlay" id="ov" hidden><div class="modal" id="modal"></div></div>
+<div class="banner" id="banner"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+/* =========================================================
+   Colour helpers
+   ========================================================= */
+function hexToRgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return[n>>16&255,n>>8&255,n&255]}
+function rgbToHex(r,g,b){return'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('')}
+function shade(h,a){const[r,g,b]=hexToRgb(h);return a>=0?rgbToHex(r+(255-r)*a,g+(255-g)*a,b+(255-b)*a):rgbToHex(r*(1+a),g*(1+a),b*(1+a))}
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+
+/* =========================================================
+   World data
+   ========================================================= */
+const HABITATS=[
+  {id:'sky',name:'Sky',emoji:'☁️',grad:'linear-gradient(160deg,#7dd3fc,#a78bfa)'},
+  {id:'forest',name:'Forest',emoji:'🌲',grad:'linear-gradient(160deg,#4ade80,#15803d)'},
+  {id:'mountain',name:'Mountains',emoji:'⛰️',grad:'linear-gradient(160deg,#c4b5a5,#6b5b4e)'},
+  {id:'sea',name:'Sea',emoji:'🌊',grad:'linear-gradient(160deg,#38bdf8,#1e40af)'},
+  {id:'desert',name:'Desert',emoji:'🏜️',grad:'linear-gradient(160deg,#fde047,#ea580c)'},
+  {id:'ice',name:'Ice',emoji:'❄️',grad:'linear-gradient(160deg,#e0f2fe,#3b82f6)'}
+];
+const HAB=Object.fromEntries(HABITATS.map(h=>[h.id,h]));
+
+const BASE=[
+ {id:'owl',name:'Owl',hab:'sky',pre:'Hoot',suf:'owl',sound:'Hoo',power:'see in the dark',
+  genes:{shape:'round',ears:'tufts',eyes:'ring',mouth:'beak',back:'wings',limbs:'feet',tail:'feather',pattern:'belly',head:'#8e6cf0',body:'#8e6cf0',accent:'#ffcf5c',belly:'#efe4ff'}},
+ {id:'dragonfly',name:'Dragonfly',hab:'sky',pre:'Zippa',suf:'fly',sound:'Bzz',power:'zoom faster than the wind',
+  genes:{shape:'tall',ears:'antennae',eyes:'goggle',mouth:'smile',back:'bugwings',limbs:'none',tail:'segment',pattern:'stripes',head:'#22d3c5',body:'#22d3c5',accent:'#3b82f6',belly:'#c9fff6'}},
+ {id:'fox',name:'Fox',hab:'forest',pre:'Foxy',suf:'fox',sound:'Yip',power:'sniff out hidden treasure',
+  genes:{shape:'round',ears:'pointy',eyes:'big',mouth:'snout',back:'none',limbs:'paws',tail:'fluffy',pattern:'belly',head:'#ff7a2f',body:'#ff7a2f',accent:'#fff1dc',belly:'#fff1dc'}},
+ {id:'deer',name:'Deer',hab:'forest',pre:'Fawn',suf:'deer',sound:'Mew',power:'leap right over rivers',
+  genes:{shape:'tall',ears:'antlers',eyes:'big',mouth:'smile',back:'none',limbs:'hooves',tail:'stub',pattern:'spots',head:'#d08a4c',body:'#d08a4c',accent:'#ffffff',belly:'#f6dcc0'}},
+ {id:'goat',name:'Goat',hab:'mountain',pre:'Billy',suf:'goat',sound:'Maa',power:'climb the steepest cliffs',
+  genes:{shape:'round',ears:'horns',eyes:'sleepy',mouth:'beard',back:'none',limbs:'hooves',tail:'stub',pattern:'none',head:'#efe7da',body:'#efe7da',accent:'#b9a58c',belly:'#ffffff'}},
+ {id:'bear',name:'Bear',hab:'mountain',pre:'Grizzle',suf:'bear',sound:'Grr',power:'give the world’s best hugs',
+  genes:{shape:'wide',ears:'round',eyes:'tiny',mouth:'snout',back:'none',limbs:'paws',tail:'stub',pattern:'belly',head:'#9a5b36',body:'#9a5b36',accent:'#ffd8a8',belly:'#e3b083'}},
+ {id:'octopus',name:'Octopus',hab:'sea',pre:'Octo',suf:'topus',sound:'Blub',power:'squirt rainbow ink',
+  genes:{shape:'round',ears:'none',eyes:'big',mouth:'pout',back:'none',limbs:'tentacles',tail:'none',pattern:'spots',head:'#ff5fa2',body:'#ff5fa2',accent:'#ffd1e6',belly:'#ffc2dc'}},
+ {id:'puffer',name:'Pufferfish',hab:'sea',pre:'Puffa',suf:'puff',sound:'Pop',power:'puff up like a balloon',
+  genes:{shape:'round',ears:'spines',eyes:'big',mouth:'pout',back:'fins',limbs:'none',tail:'fishtail',pattern:'spots',head:'#ffd23f',body:'#ffd23f',accent:'#ff8a1c',belly:'#fff6c8'}},
+ {id:'lizard',name:'Lizard',hab:'desert',pre:'Lizzy',suf:'zard',sound:'Hiss',power:'change colour like magic',
+  genes:{shape:'wide',ears:'frill',eyes:'big',mouth:'tongue',back:'spikes',limbs:'paws',tail:'curl',pattern:'stripes',head:'#5ad15a',body:'#5ad15a',accent:'#ff6b6b',belly:'#dfffb8'}},
+ {id:'camel',name:'Camel',hab:'desert',pre:'Humpy',suf:'hump',sound:'Hmph',power:'carry a whole picnic in its hump',
+  genes:{shape:'tall',ears:'tiny',eyes:'sleepy',mouth:'buck',back:'hump',limbs:'hooves',tail:'stub',pattern:'none',head:'#e7b56a',body:'#e7b56a',accent:'#ffe2ae',belly:'#f6deb0'}},
+ {id:'penguin',name:'Penguin',hab:'ice',pre:'Waddle',suf:'guin',sound:'Squawk',power:'slide on its tummy like a toboggan',
+  genes:{shape:'tall',ears:'none',eyes:'big',mouth:'beak',back:'none',limbs:'flippers',tail:'none',pattern:'belly',head:'#33427a',body:'#33427a',accent:'#ffb020',belly:'#ffffff'}},
+ {id:'hare',name:'Snow Hare',hab:'ice',pre:'Snowy',suf:'bun',sound:'Thump',power:'hop clean over snowmen',
+  genes:{shape:'round',ears:'long',eyes:'big',mouth:'buck',back:'none',limbs:'paws',tail:'puff',pattern:'belly',head:'#eef4ff',body:'#eef4ff',accent:'#ffb3c7',belly:'#ffffff'}}
+].map(b=>({...b,kind:'base',gen:0,habs:[b.hab],powers:[b.power],genes:{...b.genes,extras:[]}}));
+const BY=Object.fromEntries(BASE.map(b=>[b.id,b]));
+
+const has=(c,k,v)=>c.genes[k]===v;
+const isWinged=c=>c.genes.back==='wings'||c.genes.back==='bugwings';
+
+const LEGENDS=[
+ {id:'L_inkwing',name:'Professor Inkwing',pre:'Ink',suf:'wing',sound:'Hoo-blub',habs:['sky','sea'],
+  power:'write glowing poems in rainbow ink',
+  lore:'The cleverest creature in all the land. It reads books underwater and wears its spectacles upside down on Sundays.',
+  riddle:'The wisest bird of the night shakes hands with the inkiest friend of the deep.',
+  clue:'Mix the Owl with the Octopus!',
+  recipe:(a,b)=>a.id==='owl'&&b.id==='octopus',
+  genes:{shape:'round',ears:'tufts',eyes:'ring',mouth:'beak',back:'wings',limbs:'tentacles',tail:'none',pattern:'spots',head:'#6d4ee8',body:'#ff4f9a',accent:'#ffd84d',belly:'#ffd1e6',extras:['aura','glasses','sparkles']}},
+ {id:'L_glimmerfox',name:'Glimmerfox',pre:'Glimmer',suf:'glim',sound:'Yip-zing',habs:['forest','sky'],
+  power:'leave a trail of shooting stars wherever it zooms',
+  lore:'Nobody has ever caught a Glimmerfox. If you see a sparkle out of the corner of your eye, it was probably one.',
+  riddle:'A sneaky friend of the forest borrows the see-through wings of the fastest flier in the sky.',
+  clue:'Mix the Fox with the Dragonfly!',
+  recipe:(a,b)=>a.id==='fox'&&b.id==='dragonfly',
+  genes:{shape:'round',ears:'pointy',eyes:'big',mouth:'snout',back:'bugwings',limbs:'paws',tail:'fluffy',pattern:'belly',head:'#ff5b2e',body:'#ff9f1c',accent:'#fff3b0',belly:'#fff3b0',extras:['aura','halo','sparkles']}},
+ {id:'L_thunderpuff',name:'Thunderpuff',pre:'Thunder',suf:'boom',sound:'Grr-KABOOM',habs:['mountain','sea'],
+  power:'puff up into a giant crackling storm cloud',
+  lore:'Gives hugs so big they make thunder. It is very sorry about the noise.',
+  riddle:'The biggest hugger in the mountains meets the bounciest balloon in the sea. Kaboom!',
+  clue:'Mix the Bear with the Pufferfish!',
+  recipe:(a,b)=>a.id==='bear'&&b.id==='puffer',
+  genes:{shape:'wide',ears:'round',eyes:'big',mouth:'pout',back:'fins',limbs:'paws',tail:'fishtail',pattern:'stripes',head:'#4f46e5',body:'#facc15',accent:'#a5f3fc',belly:'#fef9c3',extras:['aura','bolts','sparkles']}},
+ {id:'L_moonhorn',name:'Moonhorn',pre:'Moon',suf:'horn',sound:'Thump-ting',habs:['forest','ice'],
+  power:'turn moonlight into rainbows',
+  lore:'Only comes out on the night of a full moon. Its horn hums a lullaby that makes everyone have lovely dreams.',
+  riddle:'Antlers from the forest meet long ears from the snow, and a magical horn begins to glow.',
+  clue:'Mix the Deer with the Snow Hare!',
+  recipe:(a,b)=>a.id==='deer'&&b.id==='hare',
+  genes:{shape:'tall',ears:'unihorn',eyes:'big',mouth:'smile',back:'none',limbs:'hooves',tail:'fluffy',pattern:'spots',head:'#fdf4ff',body:'#fdf4ff',accent:'#c084fc',belly:'#ffffff',extras:['mane','aura','sparkles']}},
+ {id:'L_waddlehump',name:'King Waddlehump',pre:'Royal',suf:'waddle',sound:'Squawk-hmph',habs:['ice','desert'],
+  power:'carry an ice-cream oasis in its hump',
+  lore:'Ruler of the Land of Sand-and-Snow. Every summer it hands out free ice lollies from its hump.',
+  riddle:'One loves the ice, one loves the sand. Together they rule a very strange land.',
+  clue:'Mix the Penguin with the Camel!',
+  recipe:(a,b)=>a.id==='penguin'&&b.id==='camel',
+  genes:{shape:'tall',ears:'none',eyes:'big',mouth:'beak',back:'hump',limbs:'flippers',tail:'none',pattern:'belly',head:'#2b3a7a',body:'#e7b56a',accent:'#ffb020',belly:'#ffffff',extras:['crown','aura','sparkles']}},
+ {id:'L_frostbeard',name:'Frostbeard the Yeti',pre:'Frosty',suf:'yeti',sound:'Maa-thump',habs:['mountain','ice'],
+  power:'build a snow castle in one big sneeze',
+  lore:'Lives on the very top of the tallest mountain. Its beard is so fluffy that snow birds nest in it.',
+  riddle:'A bearded climber from the high peaks meets a snowy hopper with very long ears.',
+  clue:'Mix the Goat with the Snow Hare!',
+  recipe:(a,b)=>a.id==='goat'&&b.id==='hare',
+  genes:{shape:'wide',ears:'horns',eyes:'tiny',mouth:'beard',back:'spikes',limbs:'paws',tail:'puff',pattern:'belly',head:'#f8fbff',body:'#e6f0ff',accent:'#7dd3fc',belly:'#ffffff',extras:['aura','sparkles']}},
+ {id:'L_emberwing',name:'Emberwing Dragon',pre:'Ember',suf:'dragon',sound:'Hiss-ROAR',habs:['desert','mountain','sky'],
+  power:'toast marshmallows perfectly every single time',
+  lore:'A real baby dragon! It guards a treasure pile made entirely of shiny buttons.',
+  riddle:'A scaly desert friend dreams of flying. Find it a partner with HORNS on its head and WINGS on its back.',
+  clue:'Step 1: mix Goat (top) + Owl (bottom). Step 2: mix that new creature with the Lizard!',
+  recipe:(a,b)=>a.id==='lizard'&&b.kind!=='legend'&&has(b,'ears','horns')&&isWinged(b),
+  genes:{shape:'wide',ears:'horns',eyes:'big',mouth:'tongue',back:'wings',limbs:'paws',tail:'curl',pattern:'stripes',head:'#e11d48',body:'#e11d48',accent:'#fbbf24',belly:'#fde68a',extras:['aura','flame','sparkles']}},
+ {id:'L_kraken',name:'The Crowned Kraken',pre:'Kraken',suf:'kraken',sound:'BLUB-BLUB',habs:['sea','mountain'],
+  power:'make whirlpools that are fun to ride',
+  lore:'King of the Deep Blue. It is actually very shy and loves knitting with all eight arms.',
+  riddle:'The ocean needs a ruler! Bring the Octopus a friend with HORNS and a FISH TAIL.',
+  clue:'Step 1: mix Goat (top) + Pufferfish (bottom). Step 2: mix that new creature with the Octopus!',
+  recipe:(a,b)=>a.id==='octopus'&&b.kind!=='legend'&&has(b,'ears','horns')&&has(b,'tail','fishtail'),
+  genes:{shape:'round',ears:'horns',eyes:'goggle',mouth:'pout',back:'fins',limbs:'tentacles',tail:'none',pattern:'spots',head:'#0ea5e9',body:'#7c3aed',accent:'#fde047',belly:'#c4b5fd',extras:['crown','aura','sparkles']}},
+ {id:'L_marvelion',name:'Marvelion',pre:'Marvel',suf:'lion',sound:'*sparkly roar*',habs:['sky','forest','mountain','sea','desert','ice'],
+  power:'grant one wish to every kind creature it meets',
+  lore:'The rarest Mixling of all, born from the magic of two Legends. It is said to have every colour of the rainbow, and a few extra ones.',
+  riddle:'When two Legends join together, the brightest star of all is born.',
+  clue:'Mix any two Legends together!',
+  recipe:(a,b)=>a.kind==='legend'&&b.kind==='legend'&&a.id!==b.id&&a.id!=='L_marvelion'&&b.id!=='L_marvelion',
+  genes:{shape:'round',ears:'unihorn',eyes:'big',mouth:'smile',back:'wings',limbs:'paws',tail:'fluffy',pattern:'stripes',head:'#f472b6',body:'#60a5fa',accent:'#fde047',belly:'#fef3c7',extras:['mane','aura','halo','sparkles','rainbow']}}
+].map(l=>({...l,kind:'legend',gen:1,powers:[l.power]}));
+
+const FOODS=['strawberry jam','moonbeam pancakes','fizzy seaweed','cloud candyfloss','pickled rainbows','toasted marshmallows','sparkle soup','crunchy snowflakes','banana pizza','bubble tea','glitter porridge','cheese on toast','jelly beans','starfruit','honey crumpets','cucumber lollies'];
+const HOBBIES=['juggling pinecones','telling terrible jokes','collecting shiny pebbles','dancing in the rain','painting the clouds','playing hide and seek','singing to the moon','building pillow forts','skateboarding','knitting tiny scarves'];
+
+/* =========================================================
+   Mixing logic
+   ========================================================= */
+function joinName(pre,suf){
+  pre=pre.trim();suf=suf.toLowerCase();
+  if(pre.slice(-1).toLowerCase()===suf[0])suf=suf.slice(1);
+  const n=pre+suf;return n[0].toUpperCase()+n.slice(1);
+}
+const wrapId=id=>id.includes('~')?'('+id+')':id;
+const GEN_TITLE=['','','Super ','Mega ','Ultra ','Hyper ','Cosmic '];
+
+function findLegend(a,b){
+  for(const L of LEGENDS){if(L.recipe(a,b)||L.recipe(b,a))return L}
+  return null;
+}
+function mix(a,b){
+  const L=findLegend(a,b);
+  if(L)return L;
+  const id=wrapId(a.id)+'~'+wrapId(b.id);
+  const h=hash(id);
+  const A=a.genes,B=b.genes;
+  const genes={
+    shape:B.shape, ears:A.ears, eyes:A.eyes, mouth:A.mouth,
+    back:A.back!=='none'?A.back:B.back,
+    limbs:B.limbs, tail:B.tail!=='none'?B.tail:A.tail, pattern:B.pattern,
+    head:A.head, body:B.body, accent:A.accent, belly:B.belly, extras:[]
+  };
+  const gen=Math.min(Math.max(a.gen,b.gen)+1,6);
+  const sparkly=h%7===0;
+  if(sparkly)genes.extras=['sparkles','rainbow'];
+  const name=(sparkly?'Sparkly ':'')+GEN_TITLE[gen]+joinName(a.pre,b.suf);
+  const habs=[...new Set([...a.habs,...b.habs])];
+  const powers=[...new Set([a.powers[0],b.powers[b.powers.length-1]])];
+  const sound=a.sound.split('-')[0]+'-'+b.sound.split('-').pop().toLowerCase();
+  return {id,name,kind:'mix',gen,sparkly,pre:a.pre,suf:b.suf,sound,habs,powers,genes,
+    top:a.name,bottom:b.name,food:FOODS[h%FOODS.length],hobby:HOBBIES[(h>>>5)%HOBBIES.length]};
+}
+
+/* =========================================================
+   SVG creature renderer
+   ========================================================= */
+let UID=0;
+function renderCreature(c,opts={}){
+  const g=c.genes, id='m'+(UID++), anim=opts.anim!==false;
+  const dims={round:[46,40],wide:[56,36],tall:[38,46]}[g.shape]||[46,40];
+  const rx=dims[0], ry=dims[1], bx=100, by=128;
+  const hx=100, hy=by-ry-6, hr=38;
+  const H=g.head, B=g.body, A=g.accent, BL=g.belly;
+  const OH=shade(H,-.5), OB=shade(B,-.5), OA=shade(A,-.45);
+  const ex=g.extras||[];
+  const side=f=>f(-1)+f(1);
+  const floating=g.limbs==='none';
+  let s='';
+
+  /* defs */
+  s+=`<defs>
+  <radialGradient id="${id}h" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="${shade(H,.35)}"/><stop offset=".6" stop-color="${H}"/><stop offset="1" stop-color="${shade(H,-.18)}"/></radialGradient>
+  <radialGradient id="${id}b" cx="38%" cy="30%" r="80%"><stop offset="0" stop-color="${shade(B,.3)}"/><stop offset=".6" stop-color="${B}"/><stop offset="1" stop-color="${shade(B,-.2)}"/></radialGradient>
+  <linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7c2"/><stop offset=".5" stop-color="#ffd54a"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+  <linearGradient id="${id}r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4fa3"/><stop offset=".25" stop-color="#ffd54a"/><stop offset=".5" stop-color="#9dff5c"/><stop offset=".75" stop-color="#3be8ff"/><stop offset="1" stop-color="#9d5cff"/></linearGradient>
+  <radialGradient id="${id}a"><stop offset="0" stop-color="#fff8c4" stop-opacity=".95"/><stop offset=".5" stop-color="#ffd54a" stop-opacity=".45"/><stop offset="1" stop-color="#ffd54a" stop-opacity="0"/></radialGradient>
+  <clipPath id="${id}c"><ellipse cx="${bx}" cy="${by}" rx="${rx}" ry="${ry}"/></clipPath>
+  </defs>`;
+
+  /* aura */
+  if(ex.includes('aura')){
+    let rays='';
+    for(let i=0;i<12;i++){const a=i*30*Math.PI/180,a2=a+.18;rays+=`<polygon points="100,115 ${100+120*Math.cos(a)},${115+120*Math.sin(a)} ${100+120*Math.cos(a2)},${115+120*Math.sin(a2)}" fill="#ffe680" opacity=".35"/>`}
+    s+=`<circle cx="100" cy="115" r="98" fill="url(#${id}a)"/><g class="spinslow">${rays}</g>`;
+  }
+  /* ground shadow */
+  s+=`<ellipse class="shadow" cx="100" cy="192" rx="${floating?40:54}" ry="7" fill="#000" opacity="${floating?.18:.28}"/>`;
+  s+=`<g class="${floating?'floaty':''}"><g class="bobber">`;
+
+  /* back parts (behind body) */
+  const wx=bx+rx*.45, wy=by-ry*.5;
+  if(g.back==='wings'){
+    s+=side(k=>{
+      const X=d=>bx+k*(rx*.45+d);
+      const p=`M${X(0)} ${wy} C${X(18)} ${wy-36} ${X(54)} ${wy-52} ${X(68)} ${wy-44} C${X(64)} ${wy-30} ${X(60)} ${wy-24} ${X(52)} ${wy-20} C${X(58)} ${wy-10} ${X(52)} ${wy-2} ${X(44)} ${wy} C${X(46)} ${wy+8} ${X(38)} ${wy+15} ${X(30)} ${wy+15} C${X(26)} ${wy+23} ${X(12)} ${wy+24} ${X(2)} ${wy+18} Z`;
+      return `<g class="${k>0?'flapR':'flapL'}" style="transform-origin:${X(0)}px ${wy}px"><path d="${p}" fill="${shade(H,.12)}" stroke="${OH}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M${X(8)} ${wy+2} Q${X(30)} ${wy-16} ${X(56)} ${wy-34} M${X(8)} ${wy+8} Q${X(28)} ${wy-2} ${X(44)} ${wy-6}" stroke="${A}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/></g>`});
+  }else if(g.back==='bugwings'){
+    s+=side(k=>{
+      const cx1=bx+k*(rx*.45+30), cy1=wy-18, cx2=bx+k*(rx*.45+24), cy2=wy+8;
+      return `<g class="buzz" style="transform-origin:${bx+k*rx*.45}px ${wy}px">
+      <ellipse cx="${cx1}" cy="${cy1}" rx="36" ry="13" transform="rotate(${k*-28} ${cx1} ${cy1})" fill="#e8fbff" fill-opacity=".55" stroke="${A}" stroke-width="2.5"/>
+      <ellipse cx="${cx2}" cy="${cy2}" rx="28" ry="11" transform="rotate(${k*16} ${cx2} ${cy2})" fill="#e8fbff" fill-opacity=".5" stroke="${A}" stroke-width="2.5"/>
+      <path d="M${bx+k*rx*.45} ${wy} L${cx1+k*26} ${cy1-12}" stroke="${A}" stroke-width="1.5" opacity=".7"/></g>`});
+  }else if(g.back==='fins'){
+    const t=by-ry;
+    s+=`<path d="M${bx-4} ${t+8} Q${bx+12} ${t-34} ${bx+40} ${t-26} Q${bx+34} ${t-6} ${bx+40} ${t+14} Z" fill="${A}" stroke="${OA}" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M${bx+8} ${t} L${bx+26} ${t-18} M${bx+18} ${t+4} L${bx+34} ${t-10}" stroke="${OA}" stroke-width="2" opacity=".6"/>`;
+  }else if(g.back==='hump'){
+    s+=`<ellipse cx="${bx+rx*.5}" cy="${by-ry+6}" rx="26" ry="26" fill="url(#${id}b)" stroke="${OB}" stroke-width="3"/>
+        <ellipse cx="${bx-rx*.4}" cy="${by-ry+8}" rx="20" ry="20" fill="url(#${id}b)" stroke="${OB}" stroke-width="3"/>`;
+  }else if(g.back==='spikes'){
+    for(let i=0;i<7;i++){
+      const t=(-165+i*24)*Math.PI/180;
+      const px=bx+rx*Math.cos(t), py=by+ry*Math.sin(t);
+      const nx=Math.cos(t)*ry, ny=Math.sin(t)*rx, nl=Math.hypot(nx,ny);
+      const ux=nx/nl, uy=ny/nl, L=18;
+      s+=`<polygon points="${px-uy*9},${py+ux*9} ${px+ux*L},${py+uy*L} ${px+uy*9},${py-ux*9}" fill="${A}" stroke="${OA}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    }
+  }
+
+  /* tail (behind body) */
+  const tx=bx+rx-6, ty=by+4;
+  let tail='';
+  switch(g.tail){
+    case 'feather':
+      tail=[-30,0,30].map(r=>`<ellipse cx="${tx+20}" cy="${ty}" rx="22" ry="8" transform="rotate(${r-15} ${tx} ${ty})" fill="${shade(B,-.1)}" stroke="${OB}" stroke-width="2.5"/>`).join('');break;
+    case 'fluffy':
+      tail=`<path d="M${tx-4} ${ty+8} C${tx+32} ${ty+22} ${tx+56} ${ty-10} ${tx+42} ${ty-46} C${tx+36} ${ty-60} ${tx+18} ${ty-50} ${tx+24} ${ty-34} C${tx+28} ${ty-18} ${tx+10} ${ty-8} ${tx-4} ${ty-10} Z" fill="url(#${id}b)" stroke="${OB}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M${tx+30} ${ty-44} C${tx+30} ${ty-60} ${tx+46} ${ty-58} ${tx+46} ${ty-38} C${tx+44} ${ty-30} ${tx+34} ${ty-32} ${tx+30} ${ty-44} Z" fill="${A}" stroke="${OB}" stroke-width="2.5"/>`;break;
+    case 'fishtail':
+      tail=`<path d="M${tx-6} ${ty} L${tx+32} ${ty-28} Q${tx+22} ${ty} ${tx+32} ${ty+28} Z" fill="${A}" stroke="${OA}" stroke-width="3" stroke-linejoin="round"/><path d="M${tx+4} ${ty} L${tx+24} ${ty-14} M${tx+4} ${ty} L${tx+24} ${ty+14}" stroke="${OA}" stroke-width="2" opacity=".6"/>`;break;
+    case 'curl':
+      tail=`<path d="M${tx-8} ${ty+12} C${tx+30} ${ty+32} ${tx+54} ${ty} ${tx+42} ${ty-20} C${tx+36} ${ty-32} ${tx+20} ${ty-24} ${tx+26} ${ty-12}" fill="none" stroke="${OB}" stroke-width="17" stroke-linecap="round"/>
+      <path d="M${tx-8} ${ty+12} C${tx+30} ${ty+32} ${tx+54} ${ty} ${tx+42} ${ty-20} C${tx+36} ${ty-32} ${tx+20} ${ty-24} ${tx+26} ${ty-12}" fill="none" stroke="${B}" stroke-width="11" stroke-linecap="round"/>`;break;
+    case 'segment':
+      for(let i=5;i>=0;i--)tail+=`<circle cx="${tx+6+i*9}" cy="${ty+6+i*4}" r="${8-i*.7}" fill="${i%2?A:B}" stroke="${OB}" stroke-width="2"/>`;break;
+    case 'stub':
+      tail=`<circle cx="${tx+4}" cy="${ty-4}" r="10" fill="${shade(B,-.08)}" stroke="${OB}" stroke-width="3"/>`;break;
+    case 'puff':
+      tail=`<circle cx="${tx+6}" cy="${ty}" r="13" fill="#fff" stroke="#c7d2e0" stroke-width="3"/><circle cx="${tx+2}" cy="${ty-4}" r="5" fill="#fff"/>`;break;
+  }
+  if(tail)s+=`<g class="wag" style="transform-origin:${tx}px ${ty}px">${tail}</g>`;
+
+  /* limbs behind body */
+  const bot=by+ry;
+  const dark=shade(B,-.18);
+  if(g.limbs==='hooves'){
+    s+=side(k=>`<rect x="${bx+k*20-8}" y="${bot-14}" width="16" height="30" rx="7" fill="${dark}" stroke="${OB}" stroke-width="3"/><rect x="${bx+k*20-8}" y="${bot+8}" width="16" height="9" rx="3" fill="#4a3426" stroke="${OB}" stroke-width="2"/>`);
+  }else if(g.limbs==='tentacles'){
+    [-34,-17,0,17,34].forEach((o,i)=>{
+      const x=bx+o, y=bot-14, d=i%2?1:-1;
+      const p=`M${x} ${y} C${x+d*10} ${y+18} ${x-d*12} ${y+28} ${x+d*6} ${y+42} q${d*6} 6 ${d*12} 0`;
+      s+=`<g class="wig" style="transform-origin:${x}px ${y}px;animation-delay:${-i*.2}s"><path d="${p}" fill="none" stroke="${OB}" stroke-width="15" stroke-linecap="round"/><path d="${p}" fill="none" stroke="${shade(B,-.04)}" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="${x-d*2}" cy="${y+24}" r="2.4" fill="${BL}"/><circle cx="${x+d*4}" cy="${y+36}" r="2" fill="${BL}"/></g>`;
+    });
+  }
+
+  /* body */
+  s+=`<ellipse cx="${bx}" cy="${by}" rx="${rx}" ry="${ry}" fill="url(#${id}b)" stroke="${OB}" stroke-width="3.5"/>`;
+  let pat='';
+  if(g.pattern==='belly')pat=`<ellipse cx="${bx}" cy="${by+14}" rx="${rx*.62}" ry="${ry*.7}" fill="${BL}"/>`;
+  else if(g.pattern==='spots')pat=[[-24,-8,8],[20,-16,6],[28,10,9],[-12,18,6],[4,2,4],[-30,14,4]].map(([x,y,r])=>`<circle cx="${bx+x}" cy="${by+y}" r="${r}" fill="${BL}" opacity=".9"/>`).join('');
+  else if(g.pattern==='stripes')pat=[0,1,2].map(i=>`<path d="M${bx-rx} ${by-10+i*18} Q${bx} ${by-24+i*18} ${bx+rx} ${by-10+i*18}" stroke="${shade(A,.1)}" stroke-width="8" fill="none" opacity=".75"/>`).join('');
+  s+=`<g clip-path="url(#${id}c)">${pat}<ellipse cx="${bx-rx*.35}" cy="${by-ry*.45}" rx="${rx*.3}" ry="${ry*.18}" fill="#fff" opacity=".25"/></g>`;
+
+  /* limbs in front */
+  if(g.limbs==='paws'){
+    s+=side(k=>`<ellipse cx="${bx+k*22}" cy="${bot+2}" rx="14" ry="10" fill="${dark}" stroke="${OB}" stroke-width="3"/><path d="M${bx+k*22-4} ${bot+6} v-5 M${bx+k*22+4} ${bot+6} v-5" stroke="${OB}" stroke-width="2" stroke-linecap="round"/>`);
+  }else if(g.limbs==='feet'){
+    s+=side(k=>{const x=bx+k*16,y=bot;return `<path d="M${x} ${y-4} L${x} ${y+10} M${x} ${y+10} L${x-8} ${y+16} M${x} ${y+10} L${x} ${y+18} M${x} ${y+10} L${x+8} ${y+16}" stroke="#c76b00" stroke-width="7" stroke-linecap="round"/><path d="M${x} ${y-4} L${x} ${y+10} M${x} ${y+10} L${x-8} ${y+16} M${x} ${y+10} L${x} ${y+18} M${x} ${y+10} L${x+8} ${y+16}" stroke="#ffb020" stroke-width="4" stroke-linecap="round"/>`});
+  }else if(g.limbs==='flippers'){
+    s+=side(k=>{const fx=bx+k*(rx-2), fy=by+2;return `<g class="${k>0?'flapR':'flapL'}" style="transform-origin:${fx}px ${fy-16}px"><ellipse cx="${fx+k*4}" cy="${fy}" rx="10" ry="24" transform="rotate(${k*-22} ${fx} ${fy})" fill="${shade(B,-.12)}" stroke="${OB}" stroke-width="3"/></g>`})
+      +side(k=>`<ellipse cx="${bx+k*16}" cy="${bot+3}" rx="13" ry="6" fill="#ffb020" stroke="#c76b00" stroke-width="2.5"/>`);
+  }
+
+  /* head: mane / ears behind */
+  if(ex.includes('mane')){
+    ['#ff4fa3','#ffd54a','#9dff5c','#3be8ff','#9d5cff'].forEach((c,i)=>{s+=`<circle cx="${hx+10-i*1.5}" cy="${hy-2}" r="${54-i*3.5}" fill="${c}" stroke="${shade(c,-.3)}" stroke-width="2"/>`});
+  }
+  switch(g.ears){
+    case 'tufts':
+      s+=side(k=>`<path d="M${hx+k*16} ${hy-32} L${hx+k*40} ${hy-58} L${hx+k*36} ${hy-14} Z" fill="${shade(H,-.12)}" stroke="${OH}" stroke-width="3" stroke-linejoin="round"/>`);break;
+    case 'pointy':
+      s+=side(k=>`<path d="M${hx+k*36} ${hy-6} L${hx+k*32} ${hy-64} L${hx+k*6} ${hy-34} Z" fill="url(#${id}h)" stroke="${OH}" stroke-width="3" stroke-linejoin="round"/><path d="M${hx+k*28} ${hy-18} L${hx+k*28} ${hy-50} L${hx+k*14} ${hy-32} Z" fill="${A}"/>`);break;
+    case 'round':
+      s+=side(k=>`<circle cx="${hx+k*28}" cy="${hy-28}" r="15" fill="url(#${id}h)" stroke="${OH}" stroke-width="3"/><circle cx="${hx+k*28}" cy="${hy-28}" r="8" fill="${A}"/>`);break;
+    case 'long':
+      s+=side(k=>{const cx=hx+k*18,cy=hy-62;return `<g class="${k>0?'boing':'wig'}" style="transform-origin:${hx+k*14}px ${hy-30}px"><ellipse cx="${cx}" cy="${cy}" rx="12" ry="32" transform="rotate(${k*12} ${cx} ${cy})" fill="url(#${id}h)" stroke="${OH}" stroke-width="3"/><ellipse cx="${cx}" cy="${cy+2}" rx="5.5" ry="23" transform="rotate(${k*12} ${cx} ${cy})" fill="${A}"/></g>`});break;
+    case 'horns':{
+      s+=side(k=>{const p=`M${hx+k*14} ${hy-30} C${hx+k*22} ${hy-68} ${hx+k*64} ${hy-60} ${hx+k*58} ${hy-26} C${hx+k*54} ${hy-10} ${hx+k*40} ${hy-16} ${hx+k*44} ${hy-28}`;
+        return `<path d="${p}" fill="none" stroke="#6b4a1f" stroke-width="14" stroke-linecap="round"/><path d="${p}" fill="none" stroke="#ecd49c" stroke-width="9" stroke-linecap="round"/>`});break;}
+    case 'antlers':{
+      const p=k=>`M${hx+k*14} ${hy-30} L${hx+k*26} ${hy-68} M${hx+k*20} ${hy-48} L${hx+k*44} ${hy-58} M${hx+k*24} ${hy-60} L${hx+k*14} ${hy-78} M${hx+k*34} ${hy-54} L${hx+k*46} ${hy-72}`;
+      s+=side(k=>`<path d="${p(k)}" stroke="#4a2c12" stroke-width="9" stroke-linecap="round" fill="none"/><path d="${p(k)}" stroke="#b07a45" stroke-width="5" stroke-linecap="round" fill="none"/>`);break;}
+    case 'antennae':
+      s+=side(k=>`<g class="${k>0?'boing':'wig'}" style="transform-origin:${hx+k*10}px ${hy-34}px"><path d="M${hx+k*10} ${hy-34} Q${hx+k*14} ${hy-64} ${hx+k*34} ${hy-72}" stroke="${OH}" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="${hx+k*34}" cy="${hy-72}" r="8" fill="${A}" stroke="${OA}" stroke-width="2.5"/><circle cx="${hx+k*32}" cy="${hy-75}" r="2.5" fill="#fff"/></g>`);break;
+    case 'spines':
+      for(let i=0;i<16;i++){const a=i/16*Math.PI*2;if(Math.sin(a)>.55)continue;
+        const p=(r,o)=>`${hx+r*Math.cos(a+o)},${hy+r*Math.sin(a+o)}`;
+        s+=`<polygon points="${p(34,-.13)} ${p(52,0)} ${p(34,.13)}" fill="${A}" stroke="${OA}" stroke-width="2.5" stroke-linejoin="round"/>`}break;
+    case 'frill':{
+      let pts=[];for(let i=0;i<28;i++){const a=i/28*Math.PI*2,r=i%2?52:62;pts.push(`${hx+r*Math.cos(a)},${hy+4+r*Math.sin(a)}`)}
+      let ribs='';for(let i=0;i<14;i++){const a=i/14*Math.PI*2;ribs+=`<line x1="${hx}" y1="${hy+4}" x2="${hx+56*Math.cos(a)}" y2="${hy+4+56*Math.sin(a)}" stroke="${OA}" stroke-width="2" opacity=".5"/>`}
+      s+=`<polygon points="${pts.join(' ')}" fill="${A}" stroke="${OA}" stroke-width="3" stroke-linejoin="round"/>${ribs}`;break;}
+    case 'tiny':
+      s+=side(k=>`<ellipse cx="${hx+k*36}" cy="${hy-18}" rx="10" ry="6" transform="rotate(${k*-35} ${hx+k*36} ${hy-18})" fill="url(#${id}h)" stroke="${OH}" stroke-width="3"/>`);break;
+    case 'unihorn':
+      s+=side(k=>`<path d="M${hx+k*34} ${hy-10} L${hx+k*30} ${hy-56} L${hx+k*8} ${hy-34} Z" fill="url(#${id}h)" stroke="${OH}" stroke-width="3" stroke-linejoin="round"/><path d="M${hx+k*27} ${hy-20} L${hx+k*27} ${hy-44} L${hx+k*16} ${hy-32} Z" fill="${A}"/>`);
+      break;
+  }
+
+  /* head */
+  s+=`<circle cx="${hx}" cy="${hy}" r="${hr}" fill="url(#${id}h)" stroke="${OH}" stroke-width="3.5"/>
+  <ellipse cx="${hx-14}" cy="${hy-20}" rx="12" ry="7" fill="#fff" opacity=".35" transform="rotate(-25 ${hx-14} ${hy-20})"/>`;
+  if(g.ears==='unihorn'){
+    s+=`<path d="M${hx-10} ${hy-30} L${hx} ${hy-90} L${hx+10} ${hy-30} Z" fill="url(#${id}g)" stroke="#a16207" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M${hx-8} ${hy-42} L${hx+7} ${hy-48} M${hx-6} ${hy-56} L${hx+5} ${hy-61} M${hx-3} ${hy-70} L${hx+3} ${hy-73}" stroke="#a16207" stroke-width="2.5"/>`;
+  }
+
+  /* eyes */
+  const ey=hy+2;
+  let eyes='';
+  const bigEye=(x,r)=>`<circle cx="${x}" cy="${ey}" r="${r}" fill="#fff" stroke="${OH}" stroke-width="2"/><circle cx="${x+1}" cy="${ey+1}" r="${r*.64}" fill="#1d1236"/><circle cx="${x+r*.3}" cy="${ey-r*.25}" r="${r*.26}" fill="#fff"/><circle cx="${x-r*.25}" cy="${ey+r*.3}" r="${r*.12}" fill="#fff"/>`;
+  switch(g.eyes){
+    case 'ring':
+      eyes=side(k=>`<circle cx="${hx+k*15}" cy="${ey}" r="17" fill="${A}" stroke="${OA}" stroke-width="2"/>`)+`<g class="blink">${side(k=>bigEye(hx+k*15,12))}</g>`;break;
+    case 'goggle':
+      eyes=`<g class="blink">${side(k=>{const x=hx+k*17;return `<circle cx="${x}" cy="${ey}" r="16" fill="#1d1236" stroke="${OH}" stroke-width="2"/><circle cx="${x}" cy="${ey}" r="12" fill="#3b2a7a"/><circle cx="${x+5}" cy="${ey-6}" r="5" fill="#fff"/><circle cx="${x-5}" cy="${ey+5}" r="2.5" fill="#fff"/><circle cx="${x+6}" cy="${ey+4}" r="1.6" fill="#fff"/>`})}</g>`;break;
+    case 'sleepy':
+      eyes=side(k=>{const x=hx+k*15;return `<circle cx="${x}" cy="${ey}" r="10" fill="#fff" stroke="${OH}" stroke-width="2"/><circle cx="${x}" cy="${ey+3}" r="6" fill="#1d1236"/><circle cx="${x+2}" cy="${ey+1}" r="2" fill="#fff"/><path d="M${x-11} ${ey} A11 11 0 0 1 ${x+11} ${ey} Z" fill="${shade(H,-.08)}" stroke="${OH}" stroke-width="2"/>`});break;
+    case 'tiny':
+      eyes=`<g class="blink">${side(k=>`<circle cx="${hx+k*14}" cy="${ey}" r="5.5" fill="#1d1236"/><circle cx="${hx+k*14+2}" cy="${ey-2}" r="1.8" fill="#fff"/>`)}</g>`;break;
+    default:
+      eyes=`<g class="blink">${side(k=>bigEye(hx+k*15,11))}</g>`;
+  }
+  s+=eyes;
+  s+=side(k=>`<ellipse cx="${hx+k*25}" cy="${hy+17}" rx="7" ry="4.5" fill="#ff6b9a" opacity=".55"/>`);
+
+  /* mouth */
+  const my=hy+21;
+  const smile=(w=8,d=7)=>`<path d="M${hx-w} ${my-2} Q${hx} ${my+d} ${hx+w} ${my-2}" stroke="#1d1236" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  switch(g.mouth){
+    case 'beak':s+=`<path d="M${hx-8} ${my-7} L${hx+8} ${my-7} L${hx} ${my+6} Z" fill="#ffb020" stroke="#b45309" stroke-width="2.5" stroke-linejoin="round"/>`;break;
+    case 'snout':s+=`<ellipse cx="${hx}" cy="${my}" rx="16" ry="11" fill="${shade(H,.45)}" stroke="${OH}" stroke-width="2"/><ellipse cx="${hx}" cy="${my-5}" rx="6" ry="4" fill="#1d1236"/><path d="M${hx-6} ${my+2} Q${hx} ${my+8} ${hx+6} ${my+2}" stroke="#1d1236" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;break;
+    case 'pout':s+=`<ellipse cx="${hx}" cy="${my}" rx="5.5" ry="6.5" fill="#ff6b9a" stroke="#1d1236" stroke-width="2.5"/>`;break;
+    case 'buck':s+=smile()+`<rect x="${hx-5}" y="${my+1}" width="10" height="7" rx="1.5" fill="#fff" stroke="#1d1236" stroke-width="2"/><line x1="${hx}" y1="${my+1}" x2="${hx}" y2="${my+8}" stroke="#1d1236" stroke-width="1.5"/>`;break;
+    case 'tongue':s+=`<g class="flick"><path d="M${hx-2} ${my+3} L${hx-3} ${my+16} L${hx} ${my+12} L${hx+3} ${my+16} L${hx+2} ${my+3} Z" fill="#ff4f7a" stroke="#1d1236" stroke-width="1.5"/></g>`+smile(13,9);break;
+    case 'beard':s+=smile()+`<path d="M${hx-10} ${hy+32} Q${hx} ${hy+40} ${hx+10} ${hy+32} L${hx+2} ${hy+58} L${hx} ${hy+52} L${hx-2} ${hy+58} Z" fill="#f4f1ea" stroke="#8a7a6a" stroke-width="2.5" stroke-linejoin="round"/>`;break;
+    default:s+=smile();
+  }
+
+  /* extras on top */
+  if(ex.includes('glasses'))s+=side(k=>`<circle cx="${hx+k*15}" cy="${ey}" r="15" fill="#bfe9ff" fill-opacity=".18" stroke="#1d1236" stroke-width="3.5"/>`)+`<path d="M${hx-3} ${ey-2} Q${hx} ${ey-6} ${hx+3} ${ey-2}" stroke="#1d1236" stroke-width="3.5" fill="none"/>`;
+  if(ex.includes('crown')){const cy=hy-hr+4;s+=`<path d="M${hx-20} ${cy} L${hx-22} ${cy-24} L${hx-10} ${cy-12} L${hx} ${cy-30} L${hx+10} ${cy-12} L${hx+22} ${cy-24} L${hx+20} ${cy} Z" fill="url(#${id}g)" stroke="#a16207" stroke-width="3" stroke-linejoin="round"/><circle cx="${hx}" cy="${cy-8}" r="4" fill="#ff4fa3" stroke="#a16207" stroke-width="1.5"/><circle cx="${hx-13}" cy="${cy-5}" r="3" fill="#3be8ff"/><circle cx="${hx+13}" cy="${cy-5}" r="3" fill="#9dff5c"/>`}
+  if(ex.includes('halo'))s+=`<ellipse cx="${hx}" cy="${hy-hr-(g.ears==='unihorn'?40:16)}" rx="26" ry="7" fill="none" stroke="#ffe066" stroke-width="5" opacity=".95"/>`;
+  if(ex.includes('flame'))s+=`<g class="flick"><path d="M${hx+30} ${my+2} C${hx+44} ${my-10} ${hx+58} ${my+2} ${hx+66} ${my-14} C${hx+70} ${my+6} ${hx+56} ${my+18} ${hx+36} ${my+10} Z" fill="#ffb020" stroke="#e11d48" stroke-width="2.5"/><path d="M${hx+38} ${my+5} C${hx+48} ${my} ${hx+54} ${my+4} ${hx+58} ${my-4} C${hx+58} ${my+8} ${hx+50} ${my+12} ${hx+40} ${my+8} Z" fill="#fff3b0"/></g>`;
+  if(ex.includes('bolts'))s+=side(k=>`<polygon class="twk" points="${100+k*72},40 ${100+k*60},66 ${100+k*70},66 ${100+k*58},92 ${100+k*80},60 ${100+k*70},60 ${100+k*80},40" fill="#fde047" stroke="#a16207" stroke-width="2"/>`);
+  if(ex.includes('rainbow'))s+=`<g class="rainbowfx" opacity=".32" style="mix-blend-mode:screen"><ellipse cx="${bx}" cy="${by}" rx="${rx}" ry="${ry}" fill="url(#${id}r)"/><circle cx="${hx}" cy="${hy}" r="${hr}" fill="url(#${id}r)"/></g>`;
+  s+=`</g></g>`;
+  if(ex.includes('sparkles')){
+    const star=(x,y,r,d,c)=>`<path class="twk" style="animation-delay:${d}s" d="M${x} ${y-r} Q${x} ${y} ${x+r} ${y} Q${x} ${y} ${x} ${y+r} Q${x} ${y} ${x-r} ${y} Q${x} ${y} ${x} ${y-r} Z" fill="${c}"/>`;
+    s+=star(28,40,10,0,'#fff')+star(172,52,12,.5,'#ffe066')+star(20,150,8,1,'#ffe066')+star(180,140,9,.3,'#fff')+star(150,14,7,.8,'#3be8ff')+star(46,98,6,1.2,'#ff9ad5');
+  }
+  return `<svg viewBox="0 -14 200 214" class="${anim?'anim':''}" role="img" aria-label="${c.name||'creature'}" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+
+/* =========================================================
+   Sound (little synth, no files needed)
+   ========================================================= */
+const Sound={
+  ctx:null,on:true,
+  init(){if(!this.ctx){try{this.ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){this.on=false}}if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume().catch(()=>{})},
+  tone(f,d=.15,type='sine',v=.15,t=0,f2){if(!this.on||!this.ctx)return;const c=this.ctx,o=c.createOscillator(),g=c.createGain(),s=c.currentTime+t;
+    o.type=type;o.frequency.setValueAtTime(f,s);if(f2)o.frequency.exponentialRampToValueAtTime(f2,s+d);
+    g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(v,s+.01);g.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(g).connect(c.destination);o.start(s);o.stop(s+d+.05)},
+  pop(){this.tone(500,.12,'sine',.18,0,900)},
+  boop(){this.tone(300,.15,'triangle',.15,0,180)},
+  whoosh(){if(!this.on||!this.ctx)return;const c=this.ctx,len=c.sampleRate*1.4,buf=c.createBuffer(1,len,c.sampleRate),d=buf.getChannelData(0);
+    for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);
+    const src=c.createBufferSource(),bp=c.createBiquadFilter(),g=c.createGain();src.buffer=buf;bp.type='bandpass';bp.Q.value=3;
+    bp.frequency.setValueAtTime(200,c.currentTime);bp.frequency.exponentialRampToValueAtTime(3000,c.currentTime+1.3);
+    g.gain.value=.35;src.connect(bp).connect(g).connect(c.destination);src.start();
+    for(let i=0;i<8;i++)this.tone(200+i*90,.12,'square',.04,i*.15)},
+  reveal(){[523,659,784,1047].forEach((f,i)=>this.tone(f,.3,'triangle',.18,i*.09))},
+  legend(){[392,523,659,784,659,784,1047,1319].forEach((f,i)=>this.tone(f,.35,'square',.08,i*.12));[1047,1319,1568].forEach((f,i)=>this.tone(f,.9,'triangle',.12,1+i*.02))},
+  quest(){[784,988,1175,1568].forEach((f,i)=>this.tone(f,.25,'sine',.16,i*.08))}
+};
+
+/* =========================================================
+   Particles
+   ========================================================= */
+const fx=document.getElementById('fx'),fctx=fx.getContext('2d');let parts=[],fxRun=false;
+function sizeFx(){fx.width=innerWidth*devicePixelRatio;fx.height=innerHeight*devicePixelRatio;fctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)}
+addEventListener('resize',sizeFx);sizeFx();
+const PAL=['#ff4fa3','#ffd54a','#3be8ff','#9dff5c','#9d5cff','#ffffff','#ff8a1c'];
+function burst(x,y,n=60,speed=9,colors=PAL){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=Math.random()*speed+2;
+  parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-2,life:1,dec:.008+Math.random()*.012,size:4+Math.random()*7,rot:Math.random()*6,vr:(Math.random()-.5)*.3,c:colors[i%colors.length],shape:i%3})}
+  if(!fxRun){fxRun=true;requestAnimationFrame(tickFx)}}
+function confetti(n=140){for(let i=0;i<n;i++){parts.push({x:Math.random()*innerWidth,y:-20-Math.random()*200,vx:(Math.random()-.5)*3,vy:Math.random()*3+2,life:1,dec:.004,size:6+Math.random()*6,rot:Math.random()*6,vr:(Math.random()-.5)*.3,c:PAL[i%PAL.length],shape:2})}
+  if(!fxRun){fxRun=true;requestAnimationFrame(tickFx)}}
+function drawStar(x,y,r){fctx.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2,rr=i%2?r*.45:r;fctx.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr)}fctx.closePath();fctx.fill()}
+function tickFx(){fctx.clearRect(0,0,innerWidth,innerHeight);
+  parts=parts.filter(p=>p.life>0&&p.y<innerHeight+40);
+  for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=.18;p.vx*=.99;p.rot+=p.vr;p.life-=p.dec;
+    fctx.globalAlpha=Math.max(0,Math.min(1,p.life*1.5));fctx.fillStyle=p.c;
+    if(p.shape===0)drawStar(p.x,p.y,p.size);
+    else if(p.shape===1){fctx.beginPath();fctx.arc(p.x,p.y,p.size/2,0,7);fctx.fill()}
+    else{fctx.save();fctx.translate(p.x,p.y);fctx.rotate(p.rot);fctx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2);fctx.restore()}}
+  fctx.globalAlpha=1;
+  if(parts.length)requestAnimationFrame(tickFx);else fxRun=false}
+
+/* =========================================================
+   Quests
+   ========================================================= */
+const countMix=()=>Object.values(S.found).filter(c=>c.kind==='mix').length;
+const countLegend=()=>Object.values(S.found).filter(c=>c.kind==='legend').length;
+const QUESTS=[
+ {id:'first',ic:'✨',title:'Spark of Wonder',desc:'Make your very first Mixling.',stars:2,unlock:'desert',check:e=>!!e},
+ {id:'skysea',ic:'🌈',title:'Splashy Skies',desc:'Mix a Sky creature with a Sea creature.',stars:2,unlock:'ice',
+  check:e=>e&&((e.a.habs.includes('sky')&&e.b.habs.includes('sea'))||(e.a.habs.includes('sea')&&e.b.habs.includes('sky')))},
+ {id:'flyfish',ic:'🐟',title:'Flying Fish',desc:'Make a Mixling with WINGS and a FISH TAIL.',stars:3,check:e=>e&&isWinged(e.r)&&has(e.r,'tail','fishtail')},
+ {id:'octodeer',ic:'🦌',title:'Tentacle Antlers',desc:'Make a Mixling with ANTLERS and TENTACLES.',stars:3,check:e=>e&&has(e.r,'ears','antlers')&&has(e.r,'limbs','tentacles')},
+ {id:'longspike',ic:'🐰',title:'Spiky Bunny',desc:'Make a Mixling with LONG EARS and SPIKES on its back.',stars:3,check:e=>e&&has(e.r,'ears','long')&&has(e.r,'back','spikes')},
+ {id:'gen2',ic:'🔁',title:'Mix-ception',desc:'Mix a Mixling with ANOTHER Mixling to make a Super one.',stars:3,check:e=>e&&e.r.gen>=2},
+ {id:'mega',ic:'🚀',title:'Mega Mixer',desc:'Keep mixing mixes until you make a Mega Mixling.',stars:4,check:e=>e&&e.r.gen>=3},
+ {id:'sparkly',ic:'💎',title:'Sparkle Hunter',desc:'Find a Sparkly Mixling. About 1 in 7 mixes are secretly sparkly!',stars:4,check:e=>e&&e.r.sparkly},
+ {id:'c10',ic:'📗',title:'Collector',desc:'Discover 10 different Mixlings.',stars:3,check:()=>countMix()>=10},
+ {id:'c25',ic:'📚',title:'Super Collector',desc:'Discover 25 different Mixlings.',stars:5,check:()=>countMix()>=25},
+ {id:'c50',ic:'🏆',title:'Mixling Master',desc:'Discover 50 different Mixlings.',stars:8,check:()=>countMix()>=50},
+ ...LEGENDS.map(L=>({id:'q_'+L.id,legend:L.id,ic:'👑',title:'Legend: ???',desc:L.riddle,stars:L.id==='L_marvelion'?10:5,clue:L.clue,check:e=>e&&e.r.id===L.id}))
+];
+
+/* =========================================================
+   State
+   ========================================================= */
+const KEY='mixlingLab.v1';
+let S={stars:3,found:{},quests:{},clues:{},unlocked:{},sound:true};
+try{const raw=localStorage.getItem(KEY);if(raw)S={...S,...JSON.parse(raw)}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+Sound.on=S.sound!==false;
+
+let slots=[null,null], active=0, tab='sky', busy=false;
+const $=id=>document.getElementById(id);
+const getCreature=id=>BY[id]||S.found[id]||LEGENDS.find(l=>l.id===id);
+
+/* =========================================================
+   UI building
+   ========================================================= */
+function buildLogo(){const t='Mixling Lab',cols=['#3be8ff','#9dff5c','#ffd54a','#ff8a1c','#ff4fa3','#c084fc','#3be8ff','#ffd54a','#9dff5c','#ff4fa3','#ffd54a'];
+  $('logo').innerHTML=[...t].map((ch,i)=>ch===' '?'<span class="sp"></span>':`<span style="color:${cols[i]};animation-delay:${i*.12}s">${ch}</span>`).join('')}
+function buildSky(){let h='';for(let i=0;i<70;i++)h+=`<i style="left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;transform:scale(${Math.random()})"></i>`;
+  const bc=['#ff4fa3','#3be8ff','#9d5cff','#ffd54a','#9dff5c'];
+  for(let i=0;i<7;i++){const s=60+Math.random()*120;h+=`<b style="width:${s}px;height:${s}px;left:${Math.random()*95}%;top:${Math.random()*95}%;background:${bc[i%5]};animation-delay:${-i*2}s"></b>`}
+  $('sky').innerHTML=h}
+
+function updateHud(){
+  $('starCount').textContent=S.stars;
+  $('foundCount').textContent=countMix()+countLegend();
+  $('legendCount').textContent=countLegend();
+  $('soundBtn').textContent=Sound.on?'🔊':'🔇';
+  const unclaimed=QUESTS.filter(q=>!S.quests[q.id]).length;
+  $('questBtn').innerHTML=`📜 Quests <span class="badge" style="${unclaimed?'':'display:none'}">${unclaimed}</span>`;
+}
+
+function renderPods(){
+  [0,1].forEach(i=>{
+    const el=i?$('podR'):$('podL'),c=slots[i];
+    let bubbles='';for(let b=0;b<5;b++)bubbles+=`<span class="bub" style="left:${10+b*20}%;animation-delay:${b*.8}s"></span>`;
+    el.innerHTML=`${bubbles}<div class="lbl">${i?'👟 Bottom half':'🎩 Top half'}<small>${i?'body, legs and tail':'head and wings'}</small></div>
+      <div class="cr">${c?renderCreature(c):'<div class="empty">?</div>'}</div>
+      <div class="nm">${c?c.name:''}</div>${c?'':'<div class="hintx">Tap a creature below</div>'}`;
+    el.classList.toggle('active',active===i);
+  });
+  const ready=slots[0]&&slots[1];
+  $('mixBtn').disabled=!ready;$('mixBtn').classList.toggle('ready',!!ready);
+}
+
+function renderTabs(){
+  const t=HABITATS.map(h=>{const locked=!isUnlocked(h.id);return `<button class="tab ${tab===h.id?'on':''} ${locked?'locked':''}" style="background:${h.grad}" data-tab="${h.id}">${locked?'🔒':h.emoji} ${h.name}</button>`});
+  t.push(`<button class="tab ${tab==='mix'?'on':''}" style="background:linear-gradient(160deg,#8b5cf6,#ec4899)" data-tab="mix">🧬 My Mixlings (${countMix()})</button>`);
+  t.push(`<button class="tab ${tab==='legend'?'on':''}" style="background:linear-gradient(160deg,#fbbf24,#ea580c)" data-tab="legend">👑 Legends (${countLegend()}/9)</button>`);
+  $('tabs').innerHTML=t.join('');
+}
+const isUnlocked=h=>!['desert','ice'].includes(h)||S.unlocked[h];
+
+function cardHTML(c,bg,opts={}){
+  const tag=c.kind==='legend'?'👑':c.sparkly?'💎':'';
+  return `<div class="card ${opts.sil?'sil':''}" style="background:${bg};animation-delay:${(opts.i||0)*.03}s" data-id="${opts.sil?'':c.id}" data-sil="${opts.sil?c.id:''}">
+    ${tag?`<span class="tag">${tag}</span>`:''}${opts.sil?'':`<span class="info" data-info="${c.id}">i</span>`}
+    ${renderCreature(c,{anim:!opts.sil})}<div class="n">${opts.sil?'???':c.name}</div></div>`;
+}
+function renderGrid(){
+  let h='';
+  if(HAB[tab]){
+    if(!isUnlocked(tab)){
+      const q=QUESTS.find(q=>q.unlock===tab);
+      h=`<div class="lockbox"><div class="big">🔒</div>The <b>${HAB[tab].name}</b> is still locked!<br>Finish the quest <b>“${q.title}”</b> to open it.<br><small>${q.desc}</small></div>`;
+    }else h=BASE.filter(b=>b.hab===tab).map((b,i)=>cardHTML(b,HAB[tab].grad,{i})).join('');
+  }else if(tab==='mix'){
+    const list=Object.values(S.found).filter(c=>c.kind==='mix').sort((a,b)=>(b.t||0)-(a.t||0));
+    h=list.length?list.map((c,i)=>cardHTML(c,c.sparkly?'linear-gradient(160deg,#ff9ad5,#7dd3fc,#c4b5fd)':HAB[c.habs[0]].grad,{i})).join('')
+      :'<div class="empty-note">No Mixlings yet! Put two creatures in the pods and press <b>MIX!</b> 🧪</div>';
+  }else{
+    h=LEGENDS.map((L,i)=>S.found[L.id]?cardHTML(L,'linear-gradient(160deg,#fde68a,#f59e0b)',{i}):cardHTML(L,'linear-gradient(160deg,#4c1d95,#1e1b4b)',{sil:true,i})).join('');
+  }
+  $('grid').innerHTML=h;
+}
+function renderAll(){renderPods();renderTabs();renderGrid();updateHud()}
+
+/* =========================================================
+   Interactions
+   ========================================================= */
+function choose(c){
+  Sound.init();
+  if(busy)return;
+  const other=slots[1-active];
+  if(other&&other.id===c.id){toast('Pick two different creatures! 🙃');Sound.boop();return}
+  slots[active]=c;Sound.pop();
+  if(!slots[1-active])active=1-active;
+  renderPods();
+}
+$('grid').addEventListener('click',e=>{
+  const info=e.target.closest('[data-info]');
+  if(info){showDetail(getCreature(info.dataset.info));return}
+  const card=e.target.closest('.card');if(!card)return;
+  if(card.dataset.sil){const L=LEGENDS.find(l=>l.id===card.dataset.sil);showRiddle(L);return}
+  const c=getCreature(card.dataset.id);if(c){choose(c);const r=card.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,14,5)}
+});
+$('tabs').addEventListener('click',e=>{const t=e.target.closest('[data-tab]');if(!t)return;Sound.init();Sound.pop();tab=t.dataset.tab;renderTabs();renderGrid()});
+[$('podL'),$('podR')].forEach((p,i)=>p.addEventListener('click',()=>{
+  if(busy)return;Sound.init();
+  if(active===i&&slots[i]){slots[i]=null;Sound.boop()}else Sound.pop();
+  active=i;renderPods()}));
+$('swapBtn').onclick=()=>{if(busy)return;Sound.init();slots.reverse();Sound.pop();renderPods()};
+$('randBtn').onclick=()=>{if(busy)return;Sound.init();
+  const pool=[...BASE.filter(b=>isUnlocked(b.hab)),...Object.values(S.found)];
+  let a=pool[Math.floor(Math.random()*pool.length)],b;do{b=pool[Math.floor(Math.random()*pool.length)]}while(b.id===a.id);
+  slots=[a,b];active=0;Sound.pop();renderPods()};
+$('soundBtn').onclick=()=>{Sound.on=!Sound.on;S.sound=Sound.on;save();Sound.init();Sound.pop();updateHud()};
+$('questBtn').onclick=()=>{Sound.init();Sound.pop();showQuests()};
+
+/* the big mix */
+$('mixBtn').onclick=async()=>{
+  if(busy||!slots[0]||!slots[1])return;
+  busy=true;Sound.init();
+  const [a,b]=slots, r=mix(a,b);
+  const lab=$('lab'),v=$('vortex').getBoundingClientRect(),cx=v.left+v.width/2,cy=v.top+v.height/2;
+  [$('podL'),$('podR')].forEach(p=>{const pr=p.querySelector('.cr').getBoundingClientRect();p.style.setProperty('--dx',(cx-(pr.left+pr.width/2))+'px');p.classList.add('fly')});
+  lab.classList.add('mixing');Sound.whoosh();
+  await wait(700);document.body.classList.add('shake');
+  for(let i=0;i<5;i++){setTimeout(()=>burst(cx,cy,10,4),i*120)}
+  await wait(700);
+  document.body.classList.remove('shake');
+  const fl=$('flash');fl.classList.remove('go');void fl.offsetWidth;fl.classList.add('go');
+  burst(cx,cy,r.kind==='legend'?160:80,r.kind==='legend'?14:10,r.kind==='legend'?['#ffd54a','#fff','#ff9f1c','#fff3b0']:PAL);
+  lab.classList.remove('mixing');[$('podL'),$('podR')].forEach(p=>p.classList.remove('fly'));
+  const isNew=!S.found[r.id];
+  if(isNew){S.found[r.id]={...r,t:Date.now(),recipe:undefined};}
+  save();
+  const earned=checkQuests({a,b,r});
+  showReveal(r,isNew,a,b);
+  if(r.kind==='legend'){Sound.legend();confetti(180)}else Sound.reveal();
+  if(r.sparkly&&isNew)confetti(80);
+  busy=false;
+  pendingBanners.push(...earned);
+  renderTabs();updateHud();
+  if(tab==='mix'||tab==='legend')renderGrid();
+};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* quests */
+let pendingBanners=[];
+function checkQuests(ev){
+  const done=[];
+  for(const q of QUESTS){
+    if(S.quests[q.id])continue;
+    let ok=false;try{ok=q.check(ev)}catch(e){}
+    if(ok){S.quests[q.id]=Date.now();S.stars+=q.stars;if(q.unlock)S.unlocked[q.unlock]=true;done.push(q)}
+  }
+  save();return done;
+}
+async function flushBanners(){
+  while(pendingBanners.length){
+    const q=pendingBanners.shift(),bn=$('banner');
+    const L=q.legend&&LEGENDS.find(l=>l.id===q.legend);
+    bn.innerHTML=`🎉 Quest complete: ${L?L.name:q.title}! <span style="white-space:nowrap">+${q.stars} ★</span>${q.unlock?`<small>🔓 The ${HAB[q.unlock].name} is now open! New creatures to mix!</small>`:''}`;
+    bn.classList.add('show');Sound.quest();confetti(90);
+    await wait(2800);bn.classList.remove('show');await wait(500);
+  }
+  renderAll();
+}
+
+/* =========================================================
+   Modals
+   ========================================================= */
+function openModal(html,cls=''){$('modal').className='modal '+cls;$('modal').innerHTML=`<button class="x" data-close>✕</button>`+html;$('ov').hidden=false}
+function closeModal(){$('ov').hidden=true;$('modal').innerHTML='';if(pendingBanners.length)flushBanners();else renderAll()}
+$('ov').addEventListener('click',e=>{if(e.target===$('ov')||e.target.closest('[data-close]')){Sound.pop();closeModal()}});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('ov').hidden)closeModal()});
+
+const traitWords={
+  ears:{tufts:'feathery tufts',pointy:'pointy ears',round:'round ears',long:'long ears',horns:'curly horns',antlers:'antlers',antennae:'antennae',spines:'spiky spines',frill:'a fancy frill',tiny:'tiny ears',unihorn:'a magic horn',none:''},
+  back:{wings:'feathery wings',bugwings:'buzzy wings',fins:'a fin',hump:'humps',spikes:'spikes',none:''},
+  limbs:{feet:'bird feet',paws:'paws',hooves:'hooves',tentacles:'tentacles',flippers:'flippers',none:'no legs (it floats!)'},
+  tail:{feather:'a feather tail',fluffy:'a fluffy tail',fishtail:'a fish tail',curl:'a curly tail',segment:'a bug tail',stub:'a little tail',puff:'a puffball tail',none:''}
+};
+function traitsHTML(c){
+  const g=c.genes,t=[traitWords.ears[g.ears],traitWords.back[g.back],traitWords.limbs[g.limbs],traitWords.tail[g.tail]].filter(Boolean);
+  return `<div class="traits">${t.map(x=>`<span>${x}</span>`).join('')}</div>`;
+}
+function rarityHTML(c){
+  if(c.kind==='legend')return '<div class="rarity r-legend">👑 LEGENDARY 👑</div>';
+  if(c.kind==='base')return `<div class="rarity r-base">${HAB[c.hab].emoji} ${HAB[c.hab].name} creature</div>`;
+  if(c.sparkly)return '<div class="rarity r-sparkly">💎 SPARKLY RARE 💎</div>';
+  return `<div class="rarity r-mix">🧬 ${c.gen>1?GEN_TITLE[c.gen].trim()+' ':''}Mixling</div>`;
+}
+function factsHTML(c){
+  const home=c.habs.map(h=>HAB[h].emoji+' '+HAB[h].name).join(' + ');
+  if(c.kind==='legend')return `<div class="facts">📖 ${c.lore}<br>⚡ It can <b>${c.power}</b>!<br>🏡 Home: <b>${home}</b><br>🔊 It goes “<b>${c.sound}!</b>”</div>`;
+  if(c.kind==='base')return `<div class="facts">⚡ It can <b>${c.power}</b>!<br>🔊 It goes “<b>${c.sound}!</b>”</div>`;
+  return `<div class="facts">🎩 Top half from <b>${c.top}</b>, 👟 bottom half from <b>${c.bottom}</b><br>
+    ⚡ It can <b>${c.powers.join('</b> and <b>')}</b>!<br>🏡 Home: <b>${home}</b><br>
+    🍽️ Favourite snack: <b>${c.food}</b><br>🎈 Hobby: <b>${c.hobby}</b><br>🔊 It goes “<b>${c.sound}!</b>”</div>`;
+}
+function bigName(n){return `<div class="rname">${[...n].map((ch,i)=>ch===' '?' ':`<span style="animation-delay:${.3+i*.05}s">${ch}</span>`).join('')}</div>`}
+
+function showReveal(r,isNew,a,b){
+  const legend=r.kind==='legend';
+  openModal(`${isNew?'<div class="newtag">NEW!</div>':''}
+    <div class="stage"><div class="rays"></div>${renderCreature(r)}</div>
+    ${bigName(r.name)}${rarityHTML(r)}
+    ${isNew?'':'<div style="opacity:.85;margin-bottom:6px">You have found this one before. Try a new mix!</div>'}
+    ${traitsHTML(r)}${factsHTML(r)}
+    <div class="row"><button class="btn teal" data-act="again">🧪 Mix it again!</button><button class="btn pink" data-close>Keep exploring</button></div>`,legend?'legend':'');
+  $('modal').querySelector('[data-act="again"]').onclick=()=>{slots=[getCreature(r.id)||r,null];active=1;Sound.pop();closeModal();toast('Now pick a bottom half to mix with '+r.name+'!')};
+}
+function showDetail(c){
+  openModal(`<div class="stage"><div class="rays"></div>${renderCreature(c)}</div>${bigName(c.name)}${rarityHTML(c)}${traitsHTML(c)}${factsHTML(c)}
+    <div class="row"><button class="btn teal" data-slot="0">🎩 Use as top</button><button class="btn pink" data-slot="1">👟 Use as bottom</button></div>`,c.kind==='legend'?'legend':'');
+  $('modal').querySelectorAll('[data-slot]').forEach(btn=>btn.onclick=()=>{
+    const i=+btn.dataset.slot;if(slots[1-i]&&slots[1-i].id===c.id)slots[1-i]=null;slots[i]=c;active=slots[1-i]?i:1-i;Sound.pop();closeModal()});
+}
+function showRiddle(L){
+  const q=QUESTS.find(q=>q.legend===L.id);
+  openModal(`<div class="stage"><div class="rays"></div><div style="filter:brightness(0) opacity(.6)">${renderCreature(L)}</div></div>
+    <h2>A secret Legend!</h2><div class="facts">🔮 <i>${L.riddle}</i></div>
+    ${S.clues[q.id]?`<div class="facts">💡 ${L.clue}</div>`:`<button class="btn gold" data-clue="${q.id}">💡 Get a clue (3 ★)</button>`}`,'legend');
+  bindClues(()=>showRiddle(L));
+}
+function bindClues(refresh){
+  $('modal').querySelectorAll('[data-clue]').forEach(btn=>btn.onclick=()=>{
+    if(S.stars<3){toast('You need 3 ★ for a clue. Finish more quests!');Sound.boop();return}
+    S.stars-=3;S.clues[btn.dataset.clue]=true;save();Sound.quest();updateHud();refresh()});
+}
+function showQuests(){
+  const qHTML=q=>{
+    const done=S.quests[q.id],L=q.legend&&LEGENDS.find(l=>l.id===q.legend);
+    const title=L&&done?'Legend: '+L.name:q.title;
+    return `<div class="q ${done?'done':''}"><div class="ic">${done?'✅':q.ic}</div><div style="flex:1">
+      <h3>${title}</h3><p>${L?'🔮 <i>'+q.desc+'</i>':q.desc}</p>
+      <div class="rw">Reward: ${q.stars} ★${q.unlock?` + unlock the ${HAB[q.unlock].emoji} ${HAB[q.unlock].name}`:''}</div>
+      ${L&&!done?(S.clues[q.id]?`<div class="clue">💡 ${q.clue}</div>`:`<button class="btn gold" data-clue="${q.id}">💡 Get a clue (3 ★)</button>`):''}
+    </div></div>`};
+  const side=QUESTS.filter(q=>!q.legend), leg=QUESTS.filter(q=>q.legend);
+  openModal(`<h2>📜 Quest Board</h2><div style="opacity:.85;margin-bottom:6px">You have <b style="color:var(--gold)">${S.stars} ★</b>. Spend them on clues to find the secret Legends!</div>
+    <div class="qlist"><div class="qsec">Adventures</div>${side.map(qHTML).join('')}<div class="qsec">Legend hunt (${countLegend()}/9)</div>${leg.map(qHTML).join('')}</div>
+    <div class="row" style="margin-top:14px"><button class="btn ghost" id="resetBtn" style="font-size:13px">Start a new game</button></div>`);
+  bindClues(showQuests);
+  $('resetBtn').onclick=()=>{const b=$('resetBtn');if(b.dataset.sure){S={stars:3,found:{},quests:{},clues:{},unlocked:{},sound:Sound.on};save();slots=[null,null];active=0;tab='sky';closeModal();toast('Fresh new lab! Let’s mix! 🧪')}else{b.dataset.sure=1;b.textContent='Tap again to wipe everything'}};
+}
+
+let toastT;
+function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600)}
+
+/* go! */
+buildLogo();buildSky();renderAll();
+if(!Object.keys(S.found).length)setTimeout(()=>toast('Pick a TOP half and a BOTTOM half, then press MIX! 🧪'),600);
+</script>
+</body>
+</html>
